@@ -14,7 +14,9 @@ class Artist:
 		self.id = artist_id
 		self.inNeighbors = []
 		self.outNeighbors = []
-		self.pr = []
+		# self.pr = []
+		self.currPR = 0
+		self.newPR = 0
 		if artist_id not in artistDict:
 			artistDict[self.id] = self
 	def addOutNeighbor(self, artist_id):

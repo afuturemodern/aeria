@@ -1,4 +1,4 @@
 cloudchaser
 ===========
 
-Soundcloud artist recomendation tool
+Soundcloud artist recommendation tool

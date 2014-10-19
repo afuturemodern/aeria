@@ -24,8 +24,8 @@ def getNeighbors(artist):
 
 		# get list of who follows the artist
 		followers = client.get('/users/' + str(artist.id) + '/followers', limit=100)
-		# get a list of tracks by the user in order to compute the users
-		# have favorited these tracks
+		# get a list of tracks by the user in order to list the users
+		# having favorited these tracks
 		artist_tracks = client.get('/users/' + str(artist.id) + '/tracks', limit=100)
 
 		# Populate the outNeighbor list with unique artist id's.
