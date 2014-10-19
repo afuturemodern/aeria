@@ -150,7 +150,7 @@ def initializePR(artistDict):
 
 	for artist in artistDict.values():
 	#	artist.pr.append(1.0 / len(artistDict))
-	artist.currPR = 1.0 / len(artistDict)
+		artist.currPR = 1.0 / len(artistDict)
 
 
 
