@@ -8,10 +8,12 @@ def getNeighbors(artist):
 		neighbors attributes of the object. """
 
 	# The following three lists are gathered to compute the outNeighbors list.
-	# A soundcloud user is considered an out neighbor if they are followed by,
+	# A soundcloud user is considered an outNeighbor if they are followed by,
 	# have a track favorited by, or a track commented on by the given artist.
 	try:
 		# get list of users who the artist is following.
+		# consider we may not want to always analyze the first 100, although it works since it should be
+		# the hundred most frequent 
 		followings = client.get('/users/' + str(artist.id) + '/followings', limit=100)
 		# get list of songs the artist favorites.
 		favorites = client.get('/users/' + str(artist.id) + '/favorites', limit=100)
@@ -19,7 +21,7 @@ def getNeighbors(artist):
 		comments = client.get('/users/' + str(artist.id) + '/comments', limit=100)
 
 		# The following two lists are gathered to compute the inNeighbors list.
-		# A soundcloud user is considered an in neighbor if they follow,
+		# A soundcloud user is considered an inNeighbor if they follow,
 		# favorite, or have commented on a track by the given artist.
 
 		# get list of who follows the artist
@@ -92,7 +94,7 @@ def getNeighbors(artist):
 def removeDangling(cleanDict, danglingDict):
 	""" Takes the artist dictionary as input and recursively removes dangling 
 	    nodes until there are no more dangling nodes. The results are returned
-	    as two new separated dictionary"""
+	    as two new separated dictionaries"""
 	newDangling = {}
 
 	for artist_id in cleanDict.copy():
@@ -116,22 +118,30 @@ def computePR(artistDict, damping, iterations):
 	
 	cleanedDict, danglingDict = removeDangling(artistDict.copy(), {})
 
-	i = 1
-	while i <= iterations:
-		prSum = 0
+	i = 0
+	while i < iterations:
+		# prSum = 0
 
-		for artist_id in danglingDict:
-			artist = artistDict.get(artist_id)
-			prSum += damping * artist.pr[i - 1] / len(artistDict)
+		# for artist_id in danglingDict:
+		#	artist = artistDict.get(artist_id)
+		#	prSum += damping * artist.pr[i - 1] / len(artistDict)
 
 		for artist_id in artistDict:
 			artist = artistDict.get(artist_id)
-			artist.pr.append((1 - damping) / len(artistDict) + prSum)
-			for neighbor in artist.inNeighbors:
-				if neighbor not in danglingDict:
-					neighbor_artist = artistDict.get(neighbor)
-					artist.pr[i] += damping * neighbor_artist.pr[i - 1] / len(neighbor_artist.outNeighbors)
-			
+			# artist.pr.append((1 - damping) / len(artistDict) + prSum)
+			for artist_id in artistDict:
+				nartist = artistDict.get(artist_id)
+				artist.nextPR += nartist.currPR * (1 - damping) / len(artistDict)
+			# for neighbor in artist.inNeighbors:
+			# 	if neighbor not in danglingDict:
+			#		neighbor_artist = artistDict.get(neighbor)
+			#		artist.pr[i] += damping * neighbor_artist.pr[i - 1] / len(neighbor_artist.outNeighbors)
+				if nartist in artist.inNeighbors:
+					artist.nextPR += damping * nartist.currPR / len(nartist.outNeighbors)
+		for artist_id in artistDict:
+			artist = artistDict.get(artist_id)			
+			artist.currPR =	artist.nextPR
+			artist.nextPR = 0
 		i += 1
 
 
@@ -139,7 +149,9 @@ def initializePR(artistDict):
 	""" Sets the initial PR value of every artist in the dictionary to 1/num_artists."""
 
 	for artist in artistDict.values():
-		artist.pr.append(1.0 / len(artistDict))
+	#	artist.pr.append(1.0 / len(artistDict))
+	artist.currPR = 1.0 / len(artistDict)
+
 
 
 
