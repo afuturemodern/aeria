@@ -60,7 +60,7 @@ computePR(artistDict, 0.85, iterations)
 prList = []
 
 for artist in artistDict.values():
-	prList.append((artist.id, artist.pr[10]))
+	prList.append((artist.id, artist.currPR))
 
 prList.sort(key = lambda tup: tup[1]) # Sort the list in palce
 
@@ -70,7 +70,7 @@ print ("Here are some artists that " + str(aoi.id) + " is interested in:")
 try:
 	print aoi.inNeighbors
 	print aoi.outNeighbors
-	print "The PR of this artist is: " + str(aoi.pr[t])
+	print "The PR of this artist is: " + str(aoi.currPR)
 	print "The artists with the top 10 PR from the group of " + str(len(prList)) + " artists are: " 
 	for item in prList[0:10]:
 		artist = client.get('/users/' + str(item[0]));

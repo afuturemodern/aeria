@@ -131,17 +131,17 @@ def computePR(artistDict, damping, iterations):
 			# artist.pr.append((1 - damping) / len(artistDict) + prSum)
 			for artist_id in artistDict:
 				nartist = artistDict.get(artist_id)
-				artist.nextPR += nartist.currPR * (1 - damping) / len(artistDict)
+				artist.newPR += nartist.currPR * (1 - damping) / len(artistDict)
 			# for neighbor in artist.inNeighbors:
 			# 	if neighbor not in danglingDict:
 			#		neighbor_artist = artistDict.get(neighbor)
 			#		artist.pr[i] += damping * neighbor_artist.pr[i - 1] / len(neighbor_artist.outNeighbors)
 				if nartist in artist.inNeighbors:
-					artist.nextPR += damping * nartist.currPR / len(nartist.outNeighbors)
+					artist.newPR += damping * nartist.currPR / len(nartist.outNeighbors)
 		for artist_id in artistDict:
 			artist = artistDict.get(artist_id)			
-			artist.currPR =	artist.nextPR
-			artist.nextPR = 0
+			artist.currPR =	artist.newPR
+			artist.newPR = 0
 		i += 1
 
 
