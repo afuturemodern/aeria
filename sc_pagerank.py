@@ -19,13 +19,15 @@ def getNeighbors(artist, artistGraph):
 		followings = client.get('/users/' + str(artist) + '/followings', limit=100)
 		print "Analyzing " + str(artist) + "\'s " + str(len(followings)) + " followings..."
 		for user in followings:
-			try:
-				artistGraph.add_node(user.id)
-				artistGraph.node[user.id]['currPR'] = 0
-				artistGraph.node[user.id]['newPR'] = 0
-				artistGraph.add_edge(artist, user.id, key = fol_weight, weight = 1)
-			except:
-				print "Unexpected error:", sys.exc_info()[0]	
+			if not artistGraph.__contains__(user.id):
+				try:
+					artistGraph.add_node(user.id)
+					artistGraph.node[user.id]['currPR'] = 0
+					artistGraph.node[user.id]['newPR'] = 0
+					artistGraph.node[user.id]['marked'] = 0
+					artistGraph.add_edge(artist, user.id, key = fol_weight, weight = 1)
+				except:
+					print "Unexpected error:", sys.exc_info()[0]	
 
 		# get list of songs the artist favorites.
 		favorites = client.get('/users/' + str(artist) + '/favorites', limit=100)
@@ -56,10 +58,15 @@ def getNeighbors(artist, artistGraph):
 		followers = client.get('/users/' + str(artist) + '/followers', limit=100)
 		print "Analyzing " + str(artist) + "\'s " + str(len(followers)) + " followers..."
 		for user in followers:
-			artistGraph.add_node(user.id)
-			artistGraph.node[user.id]['currPR'] = 0
-			artistGraph.node[user.id]['newPR'] = 0
-			artistGraph.add_edge(user.id, artist, key = fol_weight, weight = 1)
+			if not artistGraph.__contains__(user.id):
+				try:
+					artistGraph.add_node(user.id)
+					artistGraph.node[user.id]['currPR'] = 0
+					artistGraph.node[user.id]['newPR'] = 0
+					artistGraph.node[user.id]['marked'] = 0
+					artistGraph.add_edge(user.id, artist, key = fol_weight, weight = 1)
+				except:
+					print "Unexpected error:", sys.exc_info()[0]
 
 		# get a list of tracks by the user in order to list the users
 		# having favorited, commented these tracks
@@ -84,7 +91,8 @@ def getNeighbors(artist, artistGraph):
 				else:
 					artistGraph.add_edge(user.id, artist, key = com_weight, weight = 1)
 			except:
-				print "Unexpected error:", sys.exc_info()[0]	
+				print "Unexpected error:", sys.exc_info()[0]
+		artistGraph.node[artist]['marked'] = 1			
 	
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
@@ -109,7 +117,7 @@ def computePR(artistGraph, damping, iterations):
 					if nartist in artistGraph.predecessors(artist):
 						artistGraph.node[artist]['newPR'] += damping * artistGraph.node[nartist]['currPR'] / artistGraph.out_degree(nartist)
 		for artist in artists:	
-			artistGraph.node[artist]['currPR'] =artistGraph.node[artist]['newPR']
+			artistGraph.node[artist]['currPR'] = artistGraph.node[artist]['newPR']
 			artistGraph.node[artist]['newPR'] = 0
 		i += 1
 

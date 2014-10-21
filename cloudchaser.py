@@ -14,7 +14,7 @@ raw_name = raw_input("Enter a soundcloud artist to analyze: ")
 # Artist of interest[
 search = client.get('/users/', q = raw_name)[0]
 
-artistGraph.add_node(search.id, currPR = 0, newPR = 0)
+artistGraph.add_node(search.id, marked = 0, currPR = 0, newPR = 0)
 
 print("Artist interpreted as: " + search.username)
 # need to compute all neighbors in given graph selection before we can compute the 
@@ -26,7 +26,8 @@ for t in range(depth):
 	print "Iteration " + str(t)
 	for artist in artistGraph.nodes():
 		print "Artist " + str(i) + " of " + str(len(artistGraph.nodes()))
-		getNeighbors(artist, artistGraph)
+		if artistGraph.node[artist]['marked'] == 0:
+			getNeighbors(artist, artistGraph)
 		i += 1
 
 # Go through the graph and compute each PR until it converges.
