@@ -5,6 +5,30 @@ import networkx as nx
 
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
+def getArtists(artist):
+        # define within function to be honest
+        client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
+	""" Given an artist id, this functions populates the social network centered around the artist"""
+
+	# The following three lists are gathered to compute the outNeighbors list.
+	# A soundcloud user is considered an outNeighbor if they are followed by,
+	# have a track favorited by, or a track commented on by the given artist.
+	
+	# get list of users who the artist is following.
+	# consider we may not want to always analyze the first 100, although it works since it should be
+	# the hundred most frequent 
+	followings = client.get('/users/' + str(artist) + '/followings', limit=100)
+	a_dat = client.get('/users/' + str(artist))
+
+	try:
+		print "Analyzing " + str(a_dat.username) + "\'s " + str(len(followings)) + " followings..."
+	except:
+		print "Unicode Error, using artist ID: " + str(artist)	
+	
+        return [user.id for user in followings]
+
+
+
 def getNeighbors(artist, artistGraph):
 	""" Given an artist id, this functions populates the social network centered around the artist"""
 
