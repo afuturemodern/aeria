@@ -85,10 +85,12 @@ for t in range(depth):
 
   # enqueue jobs
   num_jobs = 0
+  artists_to_enqueue = list(set(artists_to_enqueue))
   for artist in artists_to_enqueue:
     print "Artist %s" % artist
       bookTasks(tasks, artist)
       num_jobs += 1
+  artists_to_enqueue = []
   # poison pill to kill off all workers when we finish
   for i in xrange(num_consumers):
     task.put(None)
@@ -103,6 +105,7 @@ for t in range(depth):
                  "tracks": addTracks}
       # eg: addFollowings(artist, newArtists)
       actions[action](artist, newArtists)
+      artists_to_enqueue += newArtists
       num_jobs -= 1
   # if we reach here, we've finished processing all artist tasks
 
