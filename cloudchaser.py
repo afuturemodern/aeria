@@ -19,19 +19,26 @@ class Consumer(multiprocessing.Process):
                 # Poison pill means we should exit
                 break
             answer = next_task()
-            self.result_queue.put([str(next_task),answer])
+            self.result_queue.put([next_task.artist, next_task.action, answer])
         return
 
 class Task(object):
-    def __init__(self, artist):
+    def __init__(self, artist, action):
         self.artist = artist
+        self.action = action
     def __call__(self):
-        neighbors = getArtists(self.artist)
-        if neighbors:
-            return neighbors
+        actions = {"followings": getFollowings,
+                   "followers": getFollowers,
+                   "favorites": getFavorites,
+                   "comments": getComments,
+                   "tracks": getTracks}
+
+        results = list(set( actions[action](artist) ))
+        if results
+            return results
         return []
     def __str__(self):
-        return '%s' % self.artist
+        return 'Get %s: %s' % (self.action, self.artist)
 
 
 # A global artist graph used to iterate through the various algorithms.
@@ -49,44 +56,55 @@ search = client.get('/users/', q = raw_name)[0]
 tasks = multiprocessing.Queue()
 results = multiprocessing.Queue()
 
-artistGraph.add_node(search.id, marked = 0, currPR = 0, newPR = 0)
+def bookTasks(tasksQueue, artist):
+  actions = ["followings",
+             "followers",
+             "favorites",
+             "comments",
+             "tracks"]
+  for action in actions:
+    tasksQueue.put(Task(newArtist, action))
 
 print("Artist interpreted as: " + search.username)
 # need to compute all neighbors in given graph selection before we can compute the 
 # pr of each node. 
 
-neighbors = getNeighbors(search.id)
+
+# initialize the task queue
+artists_to_enqueue = [search.id]
 
 depth = 2
 i = 0
 num_consumers = multiprocessing.cpu_count()
 for t in range(depth):
-	print "Iteration " + str(t)
-	for artist in artistGraph.nodes():
-                consumers = [Consumer(tasks, results) for i in xrange(num_consumers)]
-                for w in consumers:
-                  w.start()
+  num_jobs = 0
+  print "Iteration " + str(t)
+  consumers = [Consumer(tasks, results) for i in xrange(num_consumers)]
+  for w in consumers:
+    w.start()
 
-                num_jobs = 0
-		print "Artist " + str(i) + " of " + str(len(artistGraph.nodes()))
-		if artistGraph.node[artist]['marked'] == 0:
-                        newArtists = list(set(getArtists(artist)))
-			# getNeighbors(artist, artistGraph)
-                        for newArtist in newArtists:
-                          tasks.put(Task(newArtist))
-                          num_jobs += 1.0
-                newArtists = list()
-                # poison pill
-                for i in xrange(num_consumers):
-                  task.put(None)
+  # enqueue jobs
+  num_jobs = 0
+  for artist in artists_to_enqueue:
+    print "Artist %s" % artist
+      bookTasks(tasks, artist)
+      num_jobs += 1
+  # poison pill to kill off all workers when we finish
+  for i in xrange(num_consumers):
+    task.put(None)
 
-                while num_jobs:
-                  curr_results = results.get()
-                  if curr_results:
-                    for newArtist in curr_results:
-                      getNeighbors(artist, artistGraph)
-                    num_jobs -= 1
-		i += 1
+  while num_jobs:
+    artist, action, newArtists = results.get()
+    if newArtists:
+      actions = {"followings": addFollowings,
+                 "followers": addFollowers,
+                 "favorites": addFavorites,
+                 "comments": addComments,
+                 "tracks": addTracks}
+      # eg: addFollowings(artist, newArtists)
+      actions[action](artist, newArtists)
+      num_jobs -= 1
+  # if we reach here, we've finished processing all artist tasks
 
 # Go through the graph and compute each PR until it converges.
 iterations = 10
