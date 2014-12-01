@@ -1,71 +1,91 @@
 import sys
 import soundcloud
 import networkx as nx
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, HTTPError
 from sys import getrecursionlimit, setrecursionlimit
 
+import traceback
+
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
+
+id2username_cache = {}
+
+def id2username(artist):
+  global id2username_dict
+  try:
+    username = id2username_cache.get(artist, None)
+    if not username:
+      username = str(client.get('/users/%s' % artist).username.encode('utf-8'))
+      id2username_cache[artist] = username
+    return username
+  except ConnectionError:
+    print "id2username(%s): could not make a connection" % artist
+  except HTTPError:
+    print "id2username(%s): received an HTTPError" % artist
+  except UnicodeError:
+    print "id2username(%s): unicode error in encoding username" % artist
+  except Exception as e:
+    print "Unexpected error:", sys.exec_info()[0]
+    raise
 
 def getFollowings(artist):
 		# get list of users who the artist is following.
 	# consider we may not want to always analyze the first 100, although it works since it should be
 	# the hundred most frequent
-	try: 
+	try:
 		followings = client.get('/users/' + str(artist) + '/followings', limit=100)
-		a_dat = client.get('/users/' + str(artist))
 
 		try:
-			print "Analyzing " + str(a_dat.username.encode('utf-8')) + "\'s " + str(len(followings)) + " followings..."
+			print "getFollowings: Analyzing " + id2username(artist) + "\'s " + str(len(followings)) + " followings..."
 		except UnicodeError:
-			print "Unicode Error, using artist ID: " + str(artist)
+			print "getFollowings: Unicode Error, using artist ID: " + str(artist)
+                        raise
 		except NameError:
-			print "Name error, using artist ID: " + str(artist)	
+			print "getFollowings: Name error, using artist ID: " + str(artist)
+                        raise
 		except:
-			print "Unexpected error:", sys.exc_info()[0]	
+			print "getFollowings: Unexpected error:", sys.exc_info()[0]
+                        raise
 
 		return [user.id for user in followings]
-		
+
 	except ConnectionError, e:
 		print e
 		getFollowings(artist)
 
 	except TypeError:
-		print "Artist was not there!"
+		print "getFollowings: Artist was not there!"
 		return []
 
 	except RuntimeError, e:
-		print e
 		return []
 
 	except Exception, e:
-		print 'Error: %s, Status Code: %d' % (e.message, e.response.status_code)
-		getFollowings(artist)
-
-	except:
-		print "Unexpected error:", sys.exc_info()[0]
-		return []
+		print 'getFollowings: Error: %s, Status Code: %d' % (e.message, e.response.status_code)
+                raise
 
 def getFollowers(artist):
 	try:
 		followers = client.get('/users/' + str(artist) + '/followers', limit=100)
-		a_dat = client.get('/users/' + str(artist))
-		
+
 		try:
-			print "Analyzing " + str(a_dat.username.encode('utf-8')) + "\'s " + str(len(followers)) + " followers..."
+			print "getFollowers: Analyzing " + id2username(artist) + "\'s " + str(len(followers)) + " followers..."
 		except UnicodeError:
-			print "Unicode Error, using artist ID: " + str(artist)
+			print "getFollowers: Unicode Error, using artist ID: " + str(artist)
 		except NameError:
-			print "Name error, using artist ID: " + str(artist)	
+			print "getFollowers: Name error, using artist ID: " + str(artist)
 		except:
-			print "Unexpected error:", sys.exc_info()[0]	
+			print "getFollowers: Unexpected error:", sys.exc_info()[0]
+                        raise
+
 		return [user.id for user in followers]
 
 	except ConnectionError, e:
-		print e	
+		print e
 		getFollowers(artist)
 
 	except TypeError:
-		print "Artist was not there!"
+		print "getFollowers: Artist was not there!"
 		return []
 
 	except RuntimeError, e:
@@ -73,33 +93,31 @@ def getFollowers(artist):
 		return []
 
 	except Exception, e:
-		print 'Error: %s, Status Code: %d' % (e.message, e.response.status_code)
-		getFollowers(artist) 
-		
-	except: 	
-		print "Unexpected error:", sys.exc_info()[0]
-		return []
+		print 'getFollowers: Error: %s, Status Code: %d' % (e.message, e.response.status_code)
+                raise
+
 
 def getFavorites(artist):
 	try:
 		favorites = client.get('/users/' + str(artist) + '/favorites', limit=100)
 		try:
-			print "Analyzing " + str(a_dat.username.encode('utf-8')) + "\'s " + str(len(favorites)) + " favorites..."
+			print "getFavorites: Analyzing " + id2username(artist) + "\'s " + str(len(favorites)) + " favorites..."
 		except UnicodeError:
-			print "Unicode Error, using artist ID: " + str(artist)
+			print "getFavorites: Unicode Error, using artist ID: " + str(artist)
 		except NameError:
-			print "Name error, using artist ID: " + str(artist)	
-		except: 		
-			print "Unexpected error:", sys.exc_info()[0]
+			print "getFavorites: Name error, using artist ID: " + str(artist)
+		except:
+			print "getFavorites: Unexpected error:", sys.exc_info()[0]
+                        raise
 
 		return [user.id for user in favorites]
 
 	except ConnectionError, e:
-		print e	
+		print e
 		getFavorites(artist)
 
 	except TypeError:
-		print "Artist was not there!"
+		print "getFavorites: Artist was not there!"
 		return []
 
 	except RuntimeError, e:
@@ -107,33 +125,32 @@ def getFavorites(artist):
 		return []
 
 	except Exception, e:
-		print 'Error: %s, Status Code: %d' % (e.message, e.response.status_code)
-		getFavorites(artist)
+		print 'getFavorites: Error: %s, Status Code: %d' % (e.message, e.response.status_code)
+                raise
 
-	except:
-		print "Unexpected error:", sys.exc_info()[0]
-		return []
 
 def getComments(artist):
 	try:
 		comments = client.get('/users/' + str(artist) + '/comments', limit=100)
 		try:
-			print "Analyzing " + str(a_dat.username.encode('utf-8'))  + "\'s " + str(len(comments)) + " comments..."
+			print "getComments: Analyzing " + id2username(artist)  + "\'s " + str(len(comments)) + " comments..."
 		except UnicodeError:
-			print "Unicode Error, using artist ID: " + str(artist)
+			print "getComments: Unicode Error, using artist ID: " + str(artist)
 		except NameError:
-			print "Name error, using artist ID: " + str(artist)	
+			print "getComments: Name error, using artist ID: " + str(artist)
+                        traceback.print_exc()
 		except:
-			print "Unexpected error:", sys.exc_info()[0]	
+			print "getComments: Unexpected error:", sys.exc_info()[0]
+                        raise
 
 		return [user.id for user in comments]
 
 	except ConnectionError, e:
 		print e
-		getComments(artist)	
+		getComments(artist)
 
 	except TypeError:
-		print "Artist was not there!"
+		print "getComments: Artist was not there!"
 		return []
 
 	except RuntimeError, e:
@@ -141,34 +158,30 @@ def getComments(artist):
 		return []
 
 	except Exception, e:
-		print 'Error: %s, Status Code: %d' % (e.message, e.response.status_code)
-		getComments(artist)
-
-	except:
-		print "Unexpected error:", sys.exc_info()[0]
-		return []
+		print 'getComments: Error: %s, Status Code: %d' % (e.message, e.response.status_code)
+                raise
 
 def getTracks(artist):
 	try:
 		tracks = client.get('/users/' + str(artist) + '/tracks', limit=100)
-	
+
 		try:
-			print "Analyzing " + str(a_dat.username.encode('utf-8')) + "\'s " + str(len(tracks)) + " tracks..."
+			print "getTracks: Analyzing " + id2username(artist) + "\'s " + str(len(tracks)) + " tracks..."
 		except UnicodeError:
-			print "Unicode Error, using artist ID: " + str(artist)
+			print "getTracks: Unicode Error, using artist ID: " + str(artist)
 		except NameError:
-			print "Name error, using artist ID: " + str(artist)	
+			print "getTracks: Name error, using artist ID: " + str(artist)
 		except:
-			print "Unexpected error:", sys.exc_info()[0]	
+			print "getTracks: Unexpected error:", sys.exc_info()[0]
 
 		return [track.id for track in tracks]
 
 	except ConnectionError, e:
-		print e	
+		print e
 		getTracks(artist)
 
 	except TypeError:
-		print "Artist was not there!"
+		print "getTracks: Artist was not there!"
 		return []
 
 	except RuntimeError, e:
@@ -176,38 +189,34 @@ def getTracks(artist):
 		return []
 
 	except Exception, e:
-		print 'Error: %s, Status Code: %d' % (e.message, e.response.status_code)
-		getTracks(artist)
-	
-	except:
-	 	print "Unexpected error:", sys.exc_info()[0]
+		print 'getTracks: Error: %s, Status Code: %d' % (e.message, e.response.status_code)
 	 	return []
 
 def addFollowings(artist, followings, artistGraph):
 	for user in followings:
 		artistGraph.add_edge(artist, user, key = 'fol_weight', weight = 1)
-		print "User %s successfully added to artistGraph!" % str(client.get('/users/' + str(user)).username.encode('utf-8'))
+		print "User %s successfully added to artistGraph!" % id2username(user)
 
 
 def addFollowers(artist, followers, artistGraph):
 	for user in followers:
 		artistGraph.add_edge(user, artist, key = 'fol_weight', weight = 1)
-		print "User %s successfully added to artistGraph!" % str(client.get('/users/' + str(user)).username.encode('utf-8'))
+		print "User %s successfully added to artistGraph!" % id2username(user)
 
 def addFavorites(artist, favorites, artistGraph):
 	for user in favorites:
 			if artistGraph.has_edge(artist, user, 'fol_weight'):
 				if artistGraph.has_edge(artist, user, 'fav_weight'):
-					artistGraph.add_edge(artist, user, key = 'fav_weight', 
+					artistGraph.add_edge(artist, user, key = 'fav_weight',
 						weight = artistGraph.get_edge_data(artist, user, key = 'fav_weight')['weight'] + 1)
 				else:
-					artistGraph.add_edge(artist, user, key = 'fav_weight', weight = 1)	
+					artistGraph.add_edge(artist, user, key = 'fav_weight', weight = 1)
 
 def addComments(artist, comments, artistGraph):
 	for user in comments:
 			if artistGraph.has_edge(artist, user, 'fol_weight'):
 				if artistGraph.has_edge(artist, user, 'com_weight'):
-					artistGraph.add_edge(artist, user, key = 'com_weight', 
+					artistGraph.add_edge(artist, user, key = 'com_weight',
 						weight = artistGraph.get_edge_data(artist, user, key = 'com_weight')['weight'] + 1)
 				else:
 					artistGraph.add_edge(artist, user, key = 'com_weight', weight = 1)
@@ -221,7 +230,7 @@ def addTracks(artist, tracks, artistGraph):
 	 			for user in favoriters:
 	 				if artistGraph.has_edge(user, artist, 'fol_weight'):
 						if artistGraph.has_edge(user, artist, 'fav_weight'):
-							artistGraph.add_edge(user, artist, key = 'fav_weight', 
+							artistGraph.add_edge(user, artist, key = 'fav_weight',
 								weight = artistGraph.get_edge_data(user, artist, key = 'fav_weight')['weight'] + 1)
 						else:
 							artistGraph.add_edge(user, artist, key = 'fav_weight', weight = 1)
@@ -233,10 +242,10 @@ def addTracks(artist, tracks, artistGraph):
 	 			for user in commenters:
 					if artistGraph.has_edge(user, artist, 'fol_weight'):
 						if artistGraph.has_edge(user, artist, 'com_weight'):
-							artistGraph.add_edge(user, artist, key = 'com_weight', 
+							artistGraph.add_edge(user, artist, key = 'com_weight',
 								weight = artistGraph.get_edge_data(user, artist, key = 'com_weight')['weight'] + 1)
 						else:
-							artistGraph.add_edge(user, artist, key = 'com_weight', weight = 1)	
+							artistGraph.add_edge(user, artist, key = 'com_weight', weight = 1)
 	 		except:
-	 			print "Unexpected error:", sys.exc_info()[0]			
-				
+	 			print "Unexpected error:", sys.exc_info()[0]
+
