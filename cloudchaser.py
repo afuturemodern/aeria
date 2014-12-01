@@ -97,8 +97,11 @@ for t in range(depth):
 	artists_to_enqueue = list(set(artists_to_enqueue))
 
 	for artist in artists_to_enqueue:
-		print "Artist %s" % artist
-		artistGraph.add_node(artist, currPR = 0, newPR = 0)
+		try:
+			print "Now enqueueing the artist %s" % str(client.get('/users/' + str(artist)).username.encode('utf-8'))
+		except:
+			print "Unicode Error, using artist ID: " + str(artist)	
+		artistGraph.add_node(artist)
 		bookTasks(tasks, artist)
 		num_jobs += 1
 
@@ -143,11 +146,12 @@ prList.sort(key = lambda tup: tup[1]) # Sort the list in place
 prList.reverse() # order by descending PR
 
 print ("Here are some artists similar to " + str(search.username) )
+
 try:
 	for item in prList[0:10]:
 		artist = client.get('/users/' + str(item[0]))
 		try:
-			print str(artist.username), item[1]
+			print str(artist.username.encode('utf-8')), item[1]
 		except UnicodeEncodeError as e:
 				print "Unicode Error, using artist ID: " + str(artist.id) + str(item[1])
 except: 

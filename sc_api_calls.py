@@ -13,78 +13,90 @@ def getFollowings(artist):
 		a_dat = client.get('/users/' + str(artist))
 
 		try:
-			print "Analyzing " + str(a_dat.username) + "\'s " + str(len(followings)) + " followings..."
+			print "Analyzing " + str(a_dat.username.encode('utf-8')) + "\'s " + str(len(followings)) + " followings..."
 		except:
-			print "Unicode Error, using artist ID: " + str(artist)	
+			print "Unicode Error, using artist ID: " + str(artist)
+
+		return [user.id for user in followings]			
 		
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
+		return []
 
-	return [user.id for user in followings]	
+	
 
 def getFollowers(artist):
 	try:
 		followers = client.get('/users/' + str(artist) + '/followers', limit=100)
+		a_dat = client.get('/users/' + str(artist))
 		
 		try:
-			print "Analyzing " + str(a_dat.username) + "\'s " + str(len(followers)) + " followers..."
+			print "Analyzing " + str(a_dat.username.encode('utf-8')) + "\'s " + str(len(followers)) + " followers..."
 		except:
-			print "Unicode Error, using artist ID: " + str(artist)	
+			print "Unicode Error, using artist ID: " + str(artist)
+		return [user.id for user in followers]		
 	
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
-
-	return [user.id for user in followers]	
+		return []
+		
 
 def getFavorites(artist):
 	try:
 		favorites = client.get('/users/' + str(artist) + '/favorites', limit=100)
 		try:
-			print "Analyzing " + str(a_dat.username) + "\'s " + str(len(favorites)) + " favorites..."
+			print "Analyzing " + str(a_dat.username.encode('utf-8')) + "\'s " + str(len(favorites)) + " favorites..."
 		except:
-			print "Unicode Error, using artist ID: " + str(artist)	
+			print "Unicode Error, using artist ID: " + str(artist)
+		return [user.id for user in favorites]			
 
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
-
-	return [user.id for user in favorites]		
+		return []
+		
 
 def getComments(artist):
 	try:
 		comments = client.get('/users/' + str(artist) + '/comments', limit=100)
 		try:
-			print "Analyzing " + str(a_dat.username)  + "\'s " + str(len(comments)) + " comments..."
+			print "Analyzing " + str(a_dat.username.encode('utf-8'))  + "\'s " + str(len(comments)) + " comments..."
 		except:
 			print "Unicode Error, using artist ID: " + str(artist)
 
+		return [user.id for user in comments]	
+
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
+		return []
 
-	return [user.id for user in comments]		
+			
 
 def getTracks(artist):
 	try:
 		tracks = client.get('/users/' + str(artist) + '/tracks', limit=100)
 	
 		try:
-			print "Analyzing " + str(a_dat.username) + "\'s " + str(len(tracks)) + " tracks..."
+			print "Analyzing " + str(a_dat.username.encode('utf-8')) + "\'s " + str(len(tracks)) + " tracks..."
 		except:
 			print "Unicode Error, using artist ID: " + str(artist)
+
+		return [track.id for track in tracks] 
+			
 	except:
 	 	print "Unexpected error:", sys.exc_info()[0]
-	 	
-	return [track.id for track in tracks] 
+	 	return []
+	
 
 def addFollowings(artist, followings, artistGraph):
 	for user in followings:
 		artistGraph.add_edge(artist, user, key = 'fol_weight', weight = 1)
-		print "User successfully added to artistGraph!"
+		print "User %s successfully added to artistGraph!" % str(client.get('/users/' + str(user)).username.encode('utf-8'))
 
 
 def addFollowers(artist, followers, artistGraph):
 	for user in followers:
 		artistGraph.add_edge(user, artist, key = 'fol_weight', weight = 1)
-		print "User successfully added to artistGraph!"
+		print "User %s successfully added to artistGraph!" % str(client.get('/users/' + str(user)).username.encode('utf-8'))
 
 def addFavorites(artist, favorites, artistGraph):
 	for user in favorites:
