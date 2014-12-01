@@ -1,6 +1,8 @@
 import sys
 import soundcloud
-import networkx as nx 
+import networkx as nx
+from requests.exceptions import ConnectionError
+from sys import getrecursionlimit, setrecursionlimit
 
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
@@ -14,16 +16,34 @@ def getFollowings(artist):
 
 		try:
 			print "Analyzing " + str(a_dat.username.encode('utf-8')) + "\'s " + str(len(followings)) + " followings..."
-		except:
+		except UnicodeError:
 			print "Unicode Error, using artist ID: " + str(artist)
+		except NameError:
+			print "Name error, using artist ID: " + str(artist)	
+		except:
+			print "Unexpected error:", sys.exc_info()[0]	
 
-		return [user.id for user in followings]			
+		return [user.id for user in followings]
 		
+	except ConnectionError, e:
+		print e
+		getFollowings(artist)
+
+	except TypeError:
+		print "Artist was not there!"
+		return []
+
+	except RuntimeError, e:
+		print e
+		return []
+
+	except Exception, e:
+		print 'Error: %s, Status Code: %d' % (e.message, e.response.status_code)
+		getFollowings(artist)
+
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
 		return []
-
-	
 
 def getFollowers(artist):
 	try:
@@ -32,44 +52,101 @@ def getFollowers(artist):
 		
 		try:
 			print "Analyzing " + str(a_dat.username.encode('utf-8')) + "\'s " + str(len(followers)) + " followers..."
-		except:
+		except UnicodeError:
 			print "Unicode Error, using artist ID: " + str(artist)
-		return [user.id for user in followers]		
-	
-	except:
+		except NameError:
+			print "Name error, using artist ID: " + str(artist)	
+		except:
+			print "Unexpected error:", sys.exc_info()[0]	
+		return [user.id for user in followers]
+
+	except ConnectionError, e:
+		print e	
+		getFollowers(artist)
+
+	except TypeError:
+		print "Artist was not there!"
+		return []
+
+	except RuntimeError, e:
+		print e
+		return []
+
+	except Exception, e:
+		print 'Error: %s, Status Code: %d' % (e.message, e.response.status_code)
+		getFollowers(artist) 
+		
+	except: 	
 		print "Unexpected error:", sys.exc_info()[0]
 		return []
-		
 
 def getFavorites(artist):
 	try:
 		favorites = client.get('/users/' + str(artist) + '/favorites', limit=100)
 		try:
 			print "Analyzing " + str(a_dat.username.encode('utf-8')) + "\'s " + str(len(favorites)) + " favorites..."
-		except:
+		except UnicodeError:
 			print "Unicode Error, using artist ID: " + str(artist)
-		return [user.id for user in favorites]			
+		except NameError:
+			print "Name error, using artist ID: " + str(artist)	
+		except: 		
+			print "Unexpected error:", sys.exc_info()[0]
+
+		return [user.id for user in favorites]
+
+	except ConnectionError, e:
+		print e	
+		getFavorites(artist)
+
+	except TypeError:
+		print "Artist was not there!"
+		return []
+
+	except RuntimeError, e:
+		print e
+		return []
+
+	except Exception, e:
+		print 'Error: %s, Status Code: %d' % (e.message, e.response.status_code)
+		getFavorites(artist)
 
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
 		return []
-		
 
 def getComments(artist):
 	try:
 		comments = client.get('/users/' + str(artist) + '/comments', limit=100)
 		try:
 			print "Analyzing " + str(a_dat.username.encode('utf-8'))  + "\'s " + str(len(comments)) + " comments..."
-		except:
+		except UnicodeError:
 			print "Unicode Error, using artist ID: " + str(artist)
+		except NameError:
+			print "Name error, using artist ID: " + str(artist)	
+		except:
+			print "Unexpected error:", sys.exc_info()[0]	
 
-		return [user.id for user in comments]	
+		return [user.id for user in comments]
+
+	except ConnectionError, e:
+		print e
+		getComments(artist)	
+
+	except TypeError:
+		print "Artist was not there!"
+		return []
+
+	except RuntimeError, e:
+		print e
+		return []
+
+	except Exception, e:
+		print 'Error: %s, Status Code: %d' % (e.message, e.response.status_code)
+		getComments(artist)
 
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
 		return []
-
-			
 
 def getTracks(artist):
 	try:
@@ -77,15 +154,34 @@ def getTracks(artist):
 	
 		try:
 			print "Analyzing " + str(a_dat.username.encode('utf-8')) + "\'s " + str(len(tracks)) + " tracks..."
-		except:
+		except UnicodeError:
 			print "Unicode Error, using artist ID: " + str(artist)
+		except NameError:
+			print "Name error, using artist ID: " + str(artist)	
+		except:
+			print "Unexpected error:", sys.exc_info()[0]	
 
-		return [track.id for track in tracks] 
-			
+		return [track.id for track in tracks]
+
+	except ConnectionError, e:
+		print e	
+		getTracks(artist)
+
+	except TypeError:
+		print "Artist was not there!"
+		return []
+
+	except RuntimeError, e:
+		print e
+		return []
+
+	except Exception, e:
+		print 'Error: %s, Status Code: %d' % (e.message, e.response.status_code)
+		getTracks(artist)
+	
 	except:
 	 	print "Unexpected error:", sys.exc_info()[0]
 	 	return []
-	
 
 def addFollowings(artist, followings, artistGraph):
 	for user in followings:

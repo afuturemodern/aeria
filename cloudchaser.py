@@ -33,10 +33,10 @@ class Task(object):
 				"favorites": scac.getFavorites,
 				"comments": scac.getComments,
 				"tracks": scac.getTracks}
-
-		results = list(set(actions[self.action](self.artist)))
-		if results:
-			return results
+		if self.artist:		
+			results = list(set(actions[self.action](self.artist)))
+			if results and results is not None:
+				return results
 		return []
 	def __str__(self):
 		return 'Get %s: %s' % (self.action, self.artist)
