@@ -9,7 +9,7 @@ def initializePR(artistGraph):
 	artists = artistGraph.nodes()
 	for artist in artists:
 			artistGraph.node[artist]['currPR'] = 1.0 / len(artists)
-			artistGraph.node[artist]['newPR'] = 1.0 / len(artists)
+			artistGraph.node[artist]['newPR'] = 0
 	return artists		
 
 def computePR(artistGraph, damping, iterations):

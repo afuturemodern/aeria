@@ -30,10 +30,10 @@ class Task(object):
 		self.action = action
 	def __call__(self):
 		actions = {"followings": scac.getFollowings,
-                           "followers": scac.getFollowers,
-                           "favorites": scac.getFavorites,
-                           "comments": scac.getComments,
-                           "tracks": scac.getTracks}
+					"followers": scac.getFollowers,
+					"favorites": scac.getFavorites,
+					"comments": scac.getComments,
+					"tracks": scac.getTracks}
 		if self.artist:		
 			results = list(set(actions[self.action](self.artist)))
 			if results and results is not None:
@@ -47,11 +47,11 @@ class Task(object):
 artistGraph = nx.MultiDiGraph()
 
 try:
-  print "Reading in artist graph..."
-  artistGraph = nx.read_graphml('artistGraph.graphml')
-  print "Read successfully!"
+	print "Reading in artist graph..."
+	artistGraph = nx.read_graphml('artistGraph.graphml')
+	print "Read successfully!"
 except IOError:
-  print "Could not find artistGraph.graphml"
+	print "Could not find artistGraph.graphml"
 
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
@@ -67,10 +67,10 @@ results = mp.Queue()
 
 def bookTasks(tasksQueue, artist):
 	actions = ["followings",
-                   "followers",
-                   "favorites",
-                   "comments",
-                   "tracks"]
+				"followers",
+				"favorites",
+				"comments",
+				"tracks"]
 	for action in actions:
 		tasksQueue.put(Task(artist, action))
 
@@ -94,7 +94,7 @@ unavailable_artists = []
 for t in range(depth):
 
 	num_jobs = 0
-  	print "Iteration " + str(t)
+	print "Iteration " + str(t)
 	consumers = [Consumer(tasks, results) for i in xrange(num_consumers)]
 	for w in consumers:
 		w.start()
@@ -104,18 +104,17 @@ for t in range(depth):
 	artists_to_enqueue = list(set(artists_to_enqueue))
 
 	for artist in artists_to_enqueue:
-                username = scac.id2username(artist)
-                # must not be in the graph and must exist
-                if username and not artistGraph.__contains__(artist):
-                  print "\t", "Enqueueing: %s (%s)" % (username, artist)
-                  artistGraph.add_node(artist)
-                  bookTasks(tasks, artist)
-                  num_jobs += 1
-                else:
-                  print "\t", "Artist ID %s is not query-able" % artist
-                  unavailable_artists.append(artist)
+		username = scac.id2username(artist)
+		# must not be in the graph and must exist
+		if username and not artistGraph.__contains__(artist):
+			print "\t", "Enqueueing: %s (%s)" % (username, artist)
+			bookTasks(tasks, artist)
+			num_jobs += 1
+		else:
+			print "\t", "Artist ID %s is not query-able" % artist
+			unavailable_artists.append(artist)
 
-        print "\t", "--%d jobs enqueued" % num_jobs
+	print "\t", "--%d jobs enqueued" % num_jobs
 
 	artists_to_enqueue = []
 
@@ -127,22 +126,33 @@ for t in range(depth):
 		artist, action, newArtists = results.get()
 		if newArtists:
 			actions = {"followings": scac.addFollowings,
-                                   "followers": scac.addFollowers,
-                                   "favorites": scac.addFavorites,
-                                   "comments": scac.addComments,
-                                   "tracks": scac.addTracks}
-
-                        # this is most likely a useless check as artist is already in the graph from above
-                        if artistGraph.__contains__(artist):
-                          # eg: addFollowings(artist, newArtists)
-                          actions[action](artist, newArtists, artistGraph)
-                          artists_to_enqueue += newArtists
+						"followers": scac.addFollowers,
+						"favorites": scac.addFavorites,
+						"comments": scac.addComments,
+						"tracks": scac.addTracks}
+			# this is most likely a useless check as artist is already in the graph from above
+			if artistGraph.__contains__(artist):
+				# eg: addFollowings(artist, newArtists)
+				actions[action](artist, newArtists, artistGraph)
+				artists_to_enqueue += newArtists
 			num_jobs -= 1
-        print "\t", "--Finished all jobs!"
+
+	print "\t", "--Finished all jobs!"
 
 	# if we reach here, we've finished processing all artist tasks
 
 print "The artist graph currently contains " + str(len(artistGraph.nodes())) + " artists."
+
+print "Here are their connections."
+
+for artist in artistGraph.nodes():
+	username = scac.id2username(artist)
+	if username:
+		print username + " has " + str(len(artistGraph.successors(artist))) + " followings"
+		print username + " follows " + ",".join(map(lambda x: scac.id2username(x), artistGraph.successors(artist)))
+		print username + " has " + str(len(artistGraph.predecessors(artist))) + " followers"
+		print username + " is followed by " + ",".join(map(lambda x: scac.id2username(x), artistGraph.predecessors(artist)))
+
 print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
 
 nx.write_graphml(artistGraph, 'artistGraph.graphml')
