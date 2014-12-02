@@ -17,6 +17,7 @@ class Consumer(mp.Process):
 		while True:
 			next_task = self.task_queue.get()
 			if next_task is None:
+                                print "%s is dying!" % proc_name
 				# Poison pill means we should exit
 				break
 			answer = next_task()
@@ -29,10 +30,10 @@ class Task(object):
 		self.action = action
 	def __call__(self):
 		actions = {"followings": scac.getFollowings,
-				"followers": scac.getFollowers,
-				"favorites": scac.getFavorites,
-				"comments": scac.getComments,
-				"tracks": scac.getTracks}
+                           "followers": scac.getFollowers,
+                           "favorites": scac.getFavorites,
+                           "comments": scac.getComments,
+                           "tracks": scac.getTracks}
 		if self.artist:		
 			results = list(set(actions[self.action](self.artist)))
 			if results and results is not None:
@@ -56,6 +57,7 @@ client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
 raw_name = raw_input("Enter a soundcloud artist to analyze: ")
 
+
 # Artist of interest
 search = client.get('/users/', q = raw_name)[0]
 
@@ -65,23 +67,29 @@ results = mp.Queue()
 
 def bookTasks(tasksQueue, artist):
 	actions = ["followings",
-			"followers",
-			"favorites",
-			"comments",
-			"tracks"]
+                   "followers",
+                   "favorites",
+                   "comments",
+                   "tracks"]
 	for action in actions:
 		tasksQueue.put(Task(artist, action))
 
-print("Artist interpreted as: " + search.username)
+print "Artist interpreted as: %s" % search.username
 # need to compute all neighbors in given graph selection before we can compute the 
 # pr of each node. 
+print "="*20
 
 # initialize the task queue
 artists_to_enqueue = [search.id]
 
 depth = 2
 i = 0
+
+# number of processes basically
 num_consumers = mp.cpu_count()
+
+# list of artists we could not query
+unavailable_artists = []
 
 for t in range(depth):
 
@@ -96,10 +104,18 @@ for t in range(depth):
 	artists_to_enqueue = list(set(artists_to_enqueue))
 
 	for artist in artists_to_enqueue:
-                print "Enqueueing: %s (%s)" % (scac.id2username(artist), artist)
-		artistGraph.add_node(artist)
-		bookTasks(tasks, artist)
-		num_jobs += 1
+                username = scac.id2username(artist)
+                # must not be in the graph and must exist
+                if username and not artistGraph.__contains__(artist):
+                  print "\t", "Enqueueing: %s (%s)" % (username, artist)
+                  artistGraph.add_node(artist)
+                  bookTasks(tasks, artist)
+                  num_jobs += 1
+                else:
+                  print "\t", "Artist ID %s is not query-able" % artist
+                  unavailable_artists.append(artist)
+
+        print "\t", "--%d jobs enqueued" % num_jobs
 
 	artists_to_enqueue = []
 
@@ -111,14 +127,18 @@ for t in range(depth):
 		artist, action, newArtists = results.get()
 		if newArtists:
 			actions = {"followings": scac.addFollowings,
-                 "followers": scac.addFollowers,
-                 "favorites": scac.addFavorites,
-                 "comments": scac.addComments,
-                 "tracks": scac.addTracks}
-			# eg: addFollowings(artist, newArtists)
-			actions[action](artist, newArtists, artistGraph)
-			artists_to_enqueue += newArtists
+                                   "followers": scac.addFollowers,
+                                   "favorites": scac.addFavorites,
+                                   "comments": scac.addComments,
+                                   "tracks": scac.addTracks}
+
+                        # this is most likely a useless check as artist is already in the graph from above
+                        if artistGraph.__contains__(artist):
+                          # eg: addFollowings(artist, newArtists)
+                          actions[action](artist, newArtists, artistGraph)
+                          artists_to_enqueue += newArtists
 			num_jobs -= 1
+        print "\t", "--Finished all jobs!"
 
 	# if we reach here, we've finished processing all artist tasks
 
@@ -144,5 +164,5 @@ prList.reverse() # order by descending PR
 print ("Here are some artists similar to " + str(search.username) )
 
 for item in prList[0:10]:
-        artist = id2username(item[0])
+        artist = scac.id2username(item[0])
         print artist, item[1]
