@@ -46,12 +46,11 @@ class Task(object):
 artistGraph = nx.MultiDiGraph()
 
 try:
-	print "Reading in artist graph..."
-	artistGraph = nx.read_graphml('artistGraph.graphml')
-	print "Read successfully!"
-
-except:
-	print "Unexpected error:", sys.exc_info()[0]
+  print "Reading in artist graph..."
+  artistGraph = nx.read_graphml('artistGraph.graphml')
+  print "Read successfully!"
+except IOError:
+  print "Could not find artistGraph.graphml"
 
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
@@ -97,10 +96,7 @@ for t in range(depth):
 	artists_to_enqueue = list(set(artists_to_enqueue))
 
 	for artist in artists_to_enqueue:
-		try:
-			print "Now enqueueing the artist %s" % str(client.get('/users/' + str(artist)).username.encode('utf-8'))
-		except:
-			print "Unicode Error, using artist ID: " + str(artist)	
+                print "Enqueueing: %s (%s)" % (scac.id2username(artist), artist)
 		artistGraph.add_node(artist)
 		bookTasks(tasks, artist)
 		num_jobs += 1
@@ -147,12 +143,6 @@ prList.reverse() # order by descending PR
 
 print ("Here are some artists similar to " + str(search.username) )
 
-try:
-	for item in prList[0:10]:
-		artist = client.get('/users/' + str(item[0]))
-		try:
-			print str(artist.username.encode('utf-8')), item[1]
-		except UnicodeEncodeError as e:
-				print "Unicode Error, using artist ID: " + str(artist.id) + str(item[1])
-except: 
-	print "Unexpected error:", sys.exc_info()[0]
+for item in prList[0:10]:
+        artist = id2username(item[0])
+        print artist, item[1]
