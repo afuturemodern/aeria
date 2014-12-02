@@ -17,14 +17,14 @@ def id2username(artist):
       id2username_cache[artist] = username
     return username
   except ConnectionError:
-    print "\t", "id2username(%s): could not make a connection" % artist
-    return '[UNKNOWN USERNAME]'
+    print "\t"*2, "id2username(%s): could not make a connection" % artist
+    return None
   except HTTPError:
-    print "\t", "id2username(%s): received an HTTPError" % artist
-    return '[UNKNOWN USERNAME]'
+    print "\t"*2, "id2username(%s): received an HTTPError" % artist
+    return None
   except UnicodeError:
-    print "\t", "id2username(%s): unicode error in encoding username" % artist
-    return '[UNKNOWN USERNAME]'
+    print "\t"*2, "id2username(%s): unicode error in encoding username" % artist
+    return None
 
 def getFollowings(artist):
 		# get list of users who the artist is following.
@@ -32,106 +32,106 @@ def getFollowings(artist):
 	# the hundred most frequent
 	try:
 		followings = client.get('/users/' + str(artist) + '/followings', limit=100)
-                print "getFollowings: Analyzing " + id2username(artist) + "\'s " + str(len(followings)) + " followings..."
+                print "\t", "getFollowings: Analyzing " + id2username(artist) + "\'s " + str(len(followings)) + " followings..."
 		return [user.id for user in followings]
 	except ConnectionError, e:
-		print "\t", "getFollowings(%s): Connection Error" % artist
+		print "\t"*2, "getFollowings(%s): Connection Error" % artist
 		return []
 	except TypeError:
-		print "\t", "getFollowings(%s): Artist was not there!" % artist
+		print "\t"*2, "getFollowings(%s): Artist was not there!" % artist
 		return []
 	except RuntimeError, e:
                 print "\t", "getFollowings(%s): Runtime Error" % artist
 		return []
 	except Exception, e:
-		print "\t", 'getFollowings(%s): Error: %s, Status Code: %d' % (artist, e.message, e.response.status_code)
+		print "\t"*2, 'getFollowings(%s): Error: %s, Status Code: %d' % (artist, e.message, e.response.status_code)
                 return []
 
 def getFollowers(artist):
 	try:
 		followers = client.get('/users/' + str(artist) + '/followers', limit=100)
-                print "getFollowers: Analyzing " + id2username(artist) + "\'s " + str(len(followers)) + " followers..."
+                print "\t", "getFollowers: Analyzing " + id2username(artist) + "\'s " + str(len(followers)) + " followers..."
 		return [user.id for user in followers]
 
 	except ConnectionError, e:
-                print "\t", "getFollowers(%s): Connection Error" % artist
+                print "\t"*2, "getFollowers(%s): Connection Error" % artist
                 return []
 	except TypeError:
-		print "\t", "getFollowers(%s): Artist was not there!" % artist
+		print "\t"*2, "getFollowers(%s): Artist was not there!" % artist
 		return []
 	except RuntimeError, e:
-                print "\t", "getFollowers(%s): Runtime Error" % artist
+                print "\t"*2, "getFollowers(%s): Runtime Error" % artist
 		return []
 	except Exception, e:
-		print "\t", 'getFollowers(%s): Error: %s, Status Code: %d' % (artist, e.message, e.response.status_code)
+		print "\t"*2, 'getFollowers(%s): Error: %s, Status Code: %d' % (artist, e.message, e.response.status_code)
                 return []
 
 def getFavorites(artist):
 	try:
 		favorites = client.get('/users/' + str(artist) + '/favorites', limit=100)
-                print "getFavorites: Analyzing " + id2username(artist) + "\'s " + str(len(favorites)) + " favorites..."
+                print "\t", "getFavorites: Analyzing " + id2username(artist) + "\'s " + str(len(favorites)) + " favorites..."
 		return [user.id for user in favorites]
 
 	except ConnectionError, e:
-                print "\t", "getFavorites(%s): Connection Error" % artist
+                print "\t"*2, "getFavorites(%s): Connection Error" % artist
                 return []
 	except TypeError:
-		print "\t", "getFavorites(%s): Artist was not there!" % artist
+		print "\t"*2, "getFavorites(%s): Artist was not there!" % artist
 		return []
 	except RuntimeError, e:
-                print "\t", "getFavorites(%s): Runtime Error" % artist
+                print "\t"*2, "getFavorites(%s): Runtime Error" % artist
 		return []
 	except Exception, e:
-		print "\t", 'getFavorites(%s): Error: %s, Status Code: %d' % (artist, e.message, e.response.status_code)
+		print "\t"*2, 'getFavorites(%s): Error: %s, Status Code: %d' % (artist, e.message, e.response.status_code)
                 return []
 
 def getComments(artist):
 	try:
 		comments = client.get('/users/' + str(artist) + '/comments', limit=100)
-                print "getComments: Analyzing " + id2username(artist)  + "\'s " + str(len(comments)) + " comments..."
+                print "\t", "getComments: Analyzing " + id2username(artist)  + "\'s " + str(len(comments)) + " comments..."
 		return [user.id for user in comments]
 
 	except ConnectionError, e:
-                print "\t", "getComments(%s): Connection Error" % artist
+                print "\t"*2, "getComments(%s): Connection Error" % artist
                 return []
 	except TypeError:
-		print "\t", "getComments(%s): Artist was not there!" % artist
+		print "\t"*2, "getComments(%s): Artist was not there!" % artist
 		return []
 	except RuntimeError, e:
-                print "\t", "getComments(%s): Runtime Error" % artist
+                print "\t"*2, "getComments(%s): Runtime Error" % artist
 		return []
 	except Exception, e:
-		print "\t", 'getComments(%s): Error: %s, Status Code: %d' % (artist, e.message, e.response.status_code)
+		print "\t"*2, 'getComments(%s): Error: %s, Status Code: %d' % (artist, e.message, e.response.status_code)
                 return []
 
 def getTracks(artist):
 	try:
 		tracks = client.get('/users/' + str(artist) + '/tracks', limit=100)
-                print "getTracks: Analyzing " + id2username(artist) + "\'s " + str(len(tracks)) + " tracks..."
+                print "\t", "getTracks: Analyzing " + id2username(artist) + "\'s " + str(len(tracks)) + " tracks..."
 		return [track.id for track in tracks]
 
 	except ConnectionError, e:
-                print "\t", "getTracks(%s): Connection Error" % artist
+                print "\t"*2, "getTracks(%s): Connection Error" % artist
                 return []
 	except TypeError:
-		print "\t", "getTracks(%s): Artist was not there!" % artist
+		print "\t"*2, "getTracks(%s): Artist was not there!" % artist
 		return []
 	except RuntimeError, e:
-                print "\t", "getTracks(%s): Runtime Error" % artist
+                print "\t"*2, "getTracks(%s): Runtime Error" % artist
 		return []
 	except Exception, e:
-		print "\t", 'getTracks(%s): Error: %s, Status Code: %d' % (artist, e.message, e.response.status_code)
+		print "\t"*2, 'getTracks(%s): Error: %s, Status Code: %d' % (artist, e.message, e.response.status_code)
 	 	return []
 
 def addFollowings(artist, followings, artistGraph):
 	for user in followings:
 		artistGraph.add_edge(artist, user, key = 'fol_weight', weight = 1)
-		print "User %s successfully added to artistGraph!" % id2username(user)
+		print "\t", "User %s successfully added to artistGraph!" % id2username(user)
 
 def addFollowers(artist, followers, artistGraph):
 	for user in followers:
 		artistGraph.add_edge(user, artist, key = 'fol_weight', weight = 1)
-		print "User %s successfully added to artistGraph!" % id2username(user)
+		print "\t", "User %s successfully added to artistGraph!" % id2username(user)
 
 def addFavorites(artist, favorites, artistGraph):
 	for user in favorites:
@@ -165,7 +165,7 @@ def addTracks(artist, tracks, artistGraph):
 						else:
 							artistGraph.add_edge(user, artist, key = 'fav_weight', weight = 1)
 	 		except:
-	 			print "\t", "addTracks: Unexpected error:", sys.exc_info()[0]
+	 			print "\t"*2, "addTracks: Unexpected error:", sys.exc_info()[0]
 
 	 		try:
 	 			commenters = client.get('/tracks/' + str(track) + '/comments')
@@ -177,5 +177,5 @@ def addTracks(artist, tracks, artistGraph):
 						else:
 							artistGraph.add_edge(user, artist, key = 'com_weight', weight = 1)
 	 		except:
-	 			print "\t", "addTracks: Unexpected error:", sys.exc_info()[0]
+	 			print "\t"*2, "addTracks: Unexpected error:", sys.exc_info()[0]
 
