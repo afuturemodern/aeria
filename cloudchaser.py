@@ -93,7 +93,6 @@ unavailable_artists = []
 
 for t in range(depth):
 
-	num_jobs = 0
 	print "Iteration " + str(t)
 	consumers = [Consumer(tasks, results) for i in xrange(num_consumers)]
 	for w in consumers:
@@ -134,7 +133,7 @@ for t in range(depth):
 			if artistGraph.__contains__(artist):
 				# eg: addFollowings(artist, newArtists)
 				actions[action](artist, newArtists, artistGraph)
-				artists_to_enqueue += newArtists
+				artists_to_enqueue.extend(newArtists)
 			num_jobs -= 1
 
 	print "\t", "--Finished all jobs!"
@@ -146,12 +145,14 @@ print "The artist graph currently contains " + str(len(artistGraph.nodes())) + "
 print "Here are their connections."
 
 for artist in artistGraph.nodes():
-	username = scac.id2username(artist)
-	if username:
-		print username + " has " + str(len(artistGraph.successors(artist))) + " followings"
-		print username + " follows " + ",".join(map(lambda x: scac.id2username(x), artistGraph.successors(artist)))
-		print username + " has " + str(len(artistGraph.predecessors(artist))) + " followers"
-		print username + " is followed by " + ",".join(map(lambda x: scac.id2username(x), artistGraph.predecessors(artist)))
+	if artist:
+		username = scac.id2username(artist)
+		followings = artistGraph.successors(artist)
+		followers = artistGraph.predecessors(artist)	
+		print username + " has " + str(len(followings)) + " followings"
+		print username + " follows " + ", ".join(map(lambda x: scac.id2username(x), followings))
+		print username + " has " + str(len(followers)) + " followers"
+		print username + " is followed by " + ", ".join(map(lambda x: scac.id2username(x), followers))
 
 print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
 
