@@ -1,46 +1,11 @@
 import sys
+import networkx as nx 
 import soundcloud
 from sc_pagerank import computePR, initializePR
 import sc_api_calls as scac 
-import networkx as nx 
 
 import multiprocessing as mp 
-
-class Consumer(mp.Process):
-	def __init__(self, task_queue, result_queue):
-		mp.Process.__init__(self)
-		self.task_queue = task_queue
-		self.result_queue = result_queue
-
-	def run(self):
-		proc_name = self.name
-		while True:
-			next_task = self.task_queue.get()
-			if next_task is None:
-                                print "%s is dying!" % proc_name
-				# Poison pill means we should exit
-				break
-			answer = next_task()
-			self.result_queue.put([next_task.artist, next_task.action, answer])
-		return
-
-class Task(object):
-	def __init__(self, artist, action):
-		self.artist = artist
-		self.action = action
-	def __call__(self):
-		actions = {"followings": scac.getFollowings,
-					"followers": scac.getFollowers,
-					"favorites": scac.getFavorites,
-					"comments": scac.getComments,
-					"tracks": scac.getTracks}
-		if self.artist:		
-			results = list(set(actions[self.action](self.artist)))
-			if results and results is not None:
-				return results
-		return []
-	def __str__(self):
-		return 'Get %s: %s' % (self.action, self.artist)
+from cc_mp_classes import Consumer, Task, bookTasks
 
 # A global artist graph used to iterate through the various algorithms.
 # Each node is artist id, with edges weighted by activity between then.
@@ -64,15 +29,6 @@ search = client.get('/users/', q = raw_name)[0]
 # Establish communication queues
 tasks = mp.Queue()
 results = mp.Queue()
-
-def bookTasks(tasksQueue, artist):
-	actions = ["followings",
-				"followers",
-				"favorites",
-				"comments",
-				"tracks"]
-	for action in actions:
-		tasksQueue.put(Task(artist, action))
 
 print "Artist interpreted as: %s" % search.username
 # need to compute all neighbors in given graph selection before we can compute the 
@@ -104,8 +60,7 @@ for t in range(depth):
 
 	for artist in artists_to_enqueue:
 		username = scac.id2username(artist)
-		# must not be in the graph and must exist
-		if username and not artistGraph.__contains__(artist):
+		if username:
 			print "\t", "Enqueueing: %s (%s)" % (username, artist)
 			bookTasks(tasks, artist)
 			num_jobs += 1
