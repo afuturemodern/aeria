@@ -12,7 +12,7 @@ class Consumer(mp.Process):
 		while True:
 			next_task = self.task_queue.get()
 			if next_task is None:
-                                print "%s is dying!" % proc_name
+                                # print "%s is dying!" % proc_name
 				# Poison pill means we should exit
 				break
 			answer = next_task()
@@ -29,11 +29,9 @@ class Task(object):
 					"favorites": scac.getFavorites,
 					"comments": scac.getComments,
 					"tracks": scac.getTracks}
-		if self.artist:		
-			results = list(set(actions[self.action](self.artist)))
-			if results and results is not None:
-				return results
-		return []
+                initialResults = actions[self.action](self.artist)
+                results = list(set([artist for artist in initialResults if scac.id2username(artist)]))
+                return results
 	def __str__(self):
 		return 'Get %s: %s' % (self.action, self.artist)
 

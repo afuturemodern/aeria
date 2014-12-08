@@ -62,6 +62,7 @@ for t in range(depth):
 		username = scac.id2username(artist)
 		if username:
 			print "\t", "Enqueueing: %s (%s)" % (username, artist)
+                        artistGraph.add_node(artist)
 			bookTasks(tasks, artist)
 			num_jobs += 1
 		else:
@@ -104,10 +105,11 @@ for artist in artistGraph.nodes():
 		username = scac.id2username(artist)
 		followings = artistGraph.successors(artist)
 		followers = artistGraph.predecessors(artist)	
-		print username + " has " + str(len(followings)) + " followings"
-		print username + " follows " + ", ".join(map(lambda x: scac.id2username(x), followings))
-		print username + " has " + str(len(followers)) + " followers"
-		print username + " is followed by " + ", ".join(map(lambda x: scac.id2username(x), followers))
+		print "\t", username + " has " + str(len(followings)) + " followings"
+		print "\t", username + " follows " + ", ".join(map(lambda x: scac.id2username(x), followings))
+		print "\t", username + " has " + str(len(followers)) + " followers"
+		print "\t", username + " is followed by " + ", ".join(map(lambda x: scac.id2username(x), followers))
+                print "-"*40
 
 print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
 
