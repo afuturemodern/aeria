@@ -1,8 +1,10 @@
 import sys
 import networkx as nx 
+import sqlite3 
+
 import soundcloud
 from sc_pagerank import computePR, initializePR
-import sc_api_calls as scac 
+import sc_api_calls as scac
 
 import multiprocessing as mp 
 from cc_mp_classes import Consumer, Task, bookTasks
@@ -13,10 +15,12 @@ artistGraph = nx.MultiDiGraph()
 
 try:
 	print "Reading in artist graph..."
-	artistGraph = nx.read_graphml('artistGraph.graphml')
+	artistGraph = nx.read_pajek('artistGraph.net')
 	print "Read successfully!"
+	print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
+	print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
 except IOError:
-	print "Could not find artistGraph.graphml"
+	print "Could not find artistGraph"
 
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
@@ -38,7 +42,7 @@ print "="*20
 # initialize the task queue
 artists_to_enqueue = [search.id]
 
-depth = 2
+depth = 3
 i = 0
 
 # number of processes basically
@@ -62,7 +66,7 @@ for t in range(depth):
 		username = scac.id2username(artist)
 		if username:
 			print "\t", "Enqueueing: %s (%s)" % (username, artist)
-                        artistGraph.add_node(artist)
+			artistGraph.add_node(artist)
 			bookTasks(tasks, artist)
 			num_jobs += 1
 		else:
@@ -91,39 +95,44 @@ for t in range(depth):
 				actions[action](artist, newArtists, artistGraph)
 				artists_to_enqueue.extend(newArtists)
 			num_jobs -= 1
+			try:
+				print "Writing out new artists..."
+				nx.write_pajek(artistGraph, 'artistGraph.net')
+				print "New artists written successfully!"
+			except IOError:
+				print "New artists could not be written..."	
 
 	print "\t", "--Finished all jobs!"
 
 	# if we reach here, we've finished processing all artist tasks
 
-print "The artist graph currently contains " + str(len(artistGraph.nodes())) + " artists."
+try:
+	print "Writing out new artists..."
+	nx.write_pajek(artistGraph, 'artistGraph.net')
+	print "New artists written successfully!"
+except IOError:
+	print "New artists could not be written..."
 
-print "Here are their connections."
 
-for artist in artistGraph.nodes():
-	if artist:
-		username = scac.id2username(artist)
-		followings = artistGraph.successors(artist)
-		followers = artistGraph.predecessors(artist)	
-		print "\t", username + " has " + str(len(followings)) + " followings"
-		print "\t", username + " follows " + ", ".join(map(lambda x: scac.id2username(x), followings))
-		print "\t", username + " has " + str(len(followers)) + " followers"
-		print "\t", username + " is followed by " + ", ".join(map(lambda x: scac.id2username(x), followers))
-                print "-"*40
+print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
 
-print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
+print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."	
+	
+my_component = artistGraph
 
-nx.write_graphml(artistGraph, 'artistGraph.graphml')
+for component in nx.strongly_connected_component_subgraphs(artistGraph):
+	if search.id in component:
+		my_component = component
 
 # Go through the graph and compute each PR until it converges.
 iterations = 10
-print "Computing PageRank on our artistGraph..."
-computePR(artistGraph, 0.85, iterations)
+print "Computing PageRank on your searched artist..."
+computePR(my_component , 0.85, iterations)
 
 prList = []
 
-for artist in artistGraph.nodes():
-	prList.append((artist, artistGraph.node[artist]['currPR']))
+for artist in my_component.nodes():
+	prList.append((artist, my_component.node[artist]['currPR']))
 
 prList.sort(key = lambda tup: tup[1]) # Sort the list in place
 
@@ -132,5 +141,31 @@ prList.reverse() # order by descending PR
 print ("Here are some artists similar to " + str(search.username) )
 
 for item in prList[0:10]:
-        artist = scac.id2username(item[0])
-        print artist, item[1]
+	artist = scac.id2username(item[0])
+	print artist, item[1]
+
+print "Here are the current connections on artistGraph."
+
+for artist in artistGraph.nodes():
+	if artist:
+		try:
+			username = scac.id2username(artist)
+			followings = artistGraph.successors(artist)
+			followers = artistGraph.predecessors(artist)
+			try:	
+				print "\t", username + " has " + str(len(followings)) + " followings"
+				print "\t", username + " follows " + ", ".join(map(lambda x: scac.id2username(x), followings))
+			except TypeError: 
+				print "No followings home!"	
+			try:	
+				print "\t", username + " has " + str(len(followers)) + " followers"
+				print "\t", username + " is followed by " + ", ".join(map(lambda x: scac.id2username(x), followers))
+			except TypeError:
+				print "No followers home!"
+			print "-"*40
+		except UnicodeError:
+			print "Artist's username not found"			
+        	    
+
+
+

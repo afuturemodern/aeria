@@ -2,7 +2,6 @@ import sys
 import soundcloud
 import networkx as nx
 from requests.exceptions import ConnectionError, HTTPError
-from sys import getrecursionlimit, setrecursionlimit
 
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
@@ -37,6 +36,8 @@ def getFollowings(artist):
 	except ConnectionError, e:
 		# print "\t"*2, "getFollowings(%s): Connection Error" % artist
 		return []
+	except HTTPError:
+		return []	
 	except TypeError:
 		# print "\t"*2, "getFollowings(%s): Artist was not there!" % artist
 		return []
@@ -55,6 +56,8 @@ def getFollowers(artist):
 	except ConnectionError, e:
 		# print "\t"*2, "getFollowers(%s): Connection Error" % artist
 		return []
+	except HTTPError:
+		return []	
 	except TypeError:
 		# print "\t"*2, "getFollowers(%s): Artist was not there!" % artist
 		return []
@@ -73,6 +76,8 @@ def getFavorites(artist):
 	except ConnectionError, e:
 		# print "\t"*2, "getFavorites(%s): Connection Error" % artist
 		return []
+	except HTTPError:
+		return []	
 	except TypeError:
 		# print "\t"*2, "getFavorites(%s): Artist was not there!" % artist
 		return []
@@ -91,6 +96,8 @@ def getComments(artist):
 	except ConnectionError, e:
 		# print "\t"*2, "getComments(%s): Connection Error" % artist
 		return []
+	except HTTPError:
+		return []	
 	except TypeError:
 		# print "\t"*2, "getComments(%s): Artist was not there!" % artist
 		return []
@@ -107,8 +114,10 @@ def getTracks(artist):
                 # print "\t", "getTracks: Analyzing " + id2username(artist) + "\'s " + str(len(tracks)) + " tracks..."
 		return [track.id for track in tracks]
 	except ConnectionError, e:
-                # print "\t"*2, "getTracks(%s): Connection Error" % artist
-                return []
+		# print "\t"*2, "getTracks(%s): Connection Error" % artist
+		return []
+	except HTTPError:
+		return []	
 	except TypeError:
 		# print "\t"*2, "getTracks(%s): Artist was not there!" % artist
 		return []
