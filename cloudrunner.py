@@ -59,12 +59,12 @@ for artist_id in rartists:
 
 		for artist in artists_to_enqueue:
 			username = scac.id2username(artist)
-			if username:
+			try:
 				print "\t", "Enqueueing: %s (%s)" % (username, artist)
 				artistGraph.add_node(artist)
 				bookTasks(tasks, artist)
 				num_jobs += 1
-			else:
+			except UnicodeDecodeError:
 				print "\t", "Artist ID %s is not query-able" % artist
 				unavailable_artists.append(artist)
 
@@ -90,23 +90,10 @@ for artist_id in rartists:
 					actions[action](artist, newArtists, artistGraph)
 					artists_to_enqueue.extend(newArtists)
 				num_jobs -= 1
-				try:
-					print "Writing out new artists..."
-					nx.write_pajek(artistGraph, 'artistGraph.net')
-					print "New artists written successfully!"
-				except IOError:
-					print "New artists could not be written..."	
 
 		print "\t", "--Finished all jobs!"
 
 		# if we reach here, we've finished processing all artist tasks
-
-try:
-	print "Writing out new artists..."
-	nx.write_pajek(artistGraph, 'artistGraph.net')
-	print "New artists written successfully!"
-except IOError:
-	print "New artists could not be written..."
 
 print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
 

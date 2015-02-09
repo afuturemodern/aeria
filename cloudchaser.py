@@ -95,24 +95,10 @@ for t in range(depth):
 				actions[action](artist, newArtists, artistGraph)
 				artists_to_enqueue.extend(newArtists)
 			num_jobs -= 1
-			try:
-				print "Writing out new artists..."
-				nx.write_pajek(artistGraph, 'artistGraph.net')
-				print "New artists written successfully!"
-			except IOError:
-				print "New artists could not be written..."	
 
 	print "\t", "--Finished all jobs!"
 
 	# if we reach here, we've finished processing all artist tasks
-
-try:
-	print "Writing out new artists..."
-	nx.write_pajek(artistGraph, 'artistGraph.net')
-	print "New artists written successfully!"
-except IOError:
-	print "New artists could not be written..."
-
 
 print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
 
