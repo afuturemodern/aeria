@@ -42,7 +42,7 @@ print "="*20
 # initialize the task queue
 artists_to_enqueue = [search.id]
 
-depth = 3
+depth = 4
 i = 0
 
 # number of processes basically
@@ -109,6 +109,8 @@ my_component = artistGraph
 for component in nx.strongly_connected_component_subgraphs(artistGraph):
 	if search.id in component:
 		my_component = component
+
+print "This artist's clique currently contains " + str(len(artistGraph)) + " artists."		
 
 # Go through the graph and compute each PR until it converges.
 iterations = 10

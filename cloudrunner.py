@@ -37,7 +37,7 @@ for artist_id in rartists:
 	# initialize the task queue
 	artists_to_enqueue = [artist_id]
 
-	depth = 2
+	depth = 3
 	i = 0
 
 	# number of processes basically
