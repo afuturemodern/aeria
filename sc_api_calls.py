@@ -4,7 +4,7 @@ import networkx as nx
 from requests.exceptions import ConnectionError, HTTPError
 
 from cloudreader import write_graph
-
+from clouder import post_to_cloud
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
 id2username_cache = {}
@@ -31,8 +31,6 @@ def getFollowings(artist):
 	# get list of users who the artist is following.
 	# consider we may not want to always analyze the first 100, although it works since it should be
 	# the hundred most frequent
-	print "\t", "getFollowings: Analyzing " + id2username(artist) + "\'s followings..."
-        following_ids = []
 	try:
                followings = client.get('/users/' + str(artist) + '/followings/', limit=100)
                # print "\t", "getFollowings: Analyzing " + id2username(artist) + "\'s " + str(len(followings)) + " followings..."
@@ -149,24 +147,36 @@ def addFollowings(artist, followings, artistGraph):
 	for user in followings:
 		addWeight(user, artist, artistGraph, 'fol_weight')
         # write_graph(artistGraph, 'artistGraph.net')
+        print "Posting artistGraph to cloud."
+        post_to_cloud(artistGraph)
+        print "artistGraph posted!"
 
 def addFollowers(artist, followers, artistGraph):
 	print "Adding followers for %s" % (id2username(artist))
 	for user in followers:
 		addWeight(artist, user, artistGraph, 'fol_weight')
         # write_graph(artistGraph, 'artistGraph.net')
+        print "Posting artistGraph to cloud."
+        post_to_cloud(artistGraph)
+        print "artistGraph posted!"
 
 def addFavorites(artist, favorites, artistGraph):
 	print "Adding favorites for %s" % (id2username(artist))
 	for user in favorites:
 		addWeight(artist, user, artistGraph, 'fav_weight')
         # write_graph(artistGraph, 'artistGraph.net')
+        print "Posting artistGraph to cloud."
+        post_to_cloud(artistGraph)
+        print "artistGraph posted!"
 
 def addComments(artist, comments, artistGraph):
 	print "Adding comments for %s" % (id2username(artist))
 	for user in comments:
 		addWeight(artist, user, artistGraph, 'com_weight')
         # write_graph(artistGraph, 'artistGraph.net')
+        print "Posting artistGraph to cloud."
+        post_to_cloud(artistGraph)
+        print "artistGraph posted!"
 
 def addTracks(artist, tracks, artistGraph):
 	for track in tracks:
@@ -177,6 +187,9 @@ def addTracks(artist, tracks, artistGraph):
 			addWeight(user.id, artist, artistGraph, 'fav_weight')
 	
                 # write_graph(artistGraph, 'artistGraph.net')
+                print "Posting artistGraph to cloud."
+                post_to_cloud(artistGraph)
+                print "artistGraph posted!"
 
 	# get list of users who have commented on this user's track			
 		commenters = client.get('/tracks/' + str(track) + '/comments')
@@ -184,4 +197,7 @@ def addTracks(artist, tracks, artistGraph):
 		for user in commenters:
 			addWeight(user.user_id, artist, artistGraph, 'com_weight')
                 # write_graph(artistGraph, 'artistGraph.net')
+                print "Posting artistGraph to cloud."
+                post_to_cloud(artistGraph)
+                print "artistGraph posted!"
 
