@@ -3,6 +3,8 @@ import soundcloud
 import networkx as nx
 from requests.exceptions import ConnectionError, HTTPError
 
+from cloudreader import write_graph
+
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
 id2username_cache = {}
@@ -26,13 +28,16 @@ def id2username(artist):
 		return None
 
 def getFollowings(artist):
-		# get list of users who the artist is following.
+	# get list of users who the artist is following.
 	# consider we may not want to always analyze the first 100, although it works since it should be
 	# the hundred most frequent
+	print "\t", "getFollowings: Analyzing " + id2username(artist) + "\'s followings..."
+        following_ids = []
 	try:
-		followings = client.get('/users/' + str(artist) + '/followings', limit=100)
-		# print "\t", "getFollowings: Analyzing " + id2username(artist) + "\'s " + str(len(followings)) + " followings..."
-		return [user.id for user in followings]
+               followings = client.get('/users/' + str(artist) + '/followings/', limit=100)
+               # print "\t", "getFollowings: Analyzing " + id2username(artist) + "\'s " + str(len(followings)) + " followings..."
+               return [user.id for user in followings]
+               
 	except ConnectionError:
 		# print "\t"*2, "getFollowings(%s): Connection Error" % artist
 		return []
@@ -45,7 +50,7 @@ def getFollowings(artist):
 		# print "\t", "getFollowings(%s): Runtime Error" % artist
 		return []
 	except Exception, e:
-		# print "\t"*2, 'getFollowings(%s): Error: %s, Status Code: %d' % (artist, e.message, e.response.status_code)
+		# print "\t"*2, 'getFollowings(%s): Error: %s' % (artist, e.message)
 		return []
 
 def getFollowers(artist):
@@ -128,96 +133,55 @@ def getTracks(artist):
 		# print "\t"*2, 'getTracks(%s): Error: %s, Status Code: %d' % (artist, e.message, e.response.status_code)
 	 	return []
 
-def getWeight(artist, user, artistGraph, key):
-        if artistGraph.has_edge(artist, user, key=key):
-                return artistGraph.get_edge_data(artist, user, key=key)['weight'] + 1
+def getWeight(artist, user, artistGraph, attr):
+        if artistGraph.has_edge(artist, user, key=attr):
+                return artistGraph.get_edge_data(artist, user, key=attr)['weight'] + 1
         else:
           return 1
 
-def addWeight(artist, user, artistGraph, key):
-	weight = getWeight(artist, user, artistGraph, key)
-	artistGraph.add_edge(artist, user, key=key, weight=weight)
+def addWeight(artist, user, artistGraph, attr):
+	new_weight = getWeight(artist, user, artistGraph, attr)
+	artistGraph.add_edge(artist, user, key=attr, weight=new_weight)
 	print "\t", "%s --> %s" % (id2username(artist), id2username(user)) 
 
 def addFollowings(artist, followings, artistGraph):
-	print "Add Followings"
+	print "Adding followings for %s" % (id2username(artist))
 	for user in followings:
 		addWeight(user, artist, artistGraph, 'fol_weight')
-	try:
-		print "Writing out new artists..."
-		nx.write_pajek(artistGraph, 'artistGraph.net')
-		print "New artists written successfully!"
-		print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
-		print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
-	except IOError:
-		print "New artists could not be written..."		
-
+        # write_graph(artistGraph, 'artistGraph.net')
 
 def addFollowers(artist, followers, artistGraph):
-	print "Add Followers"
+	print "Adding followers for %s" % (id2username(artist))
 	for user in followers:
 		addWeight(artist, user, artistGraph, 'fol_weight')
-	try:
-		print "Writing out new artists..."
-		nx.write_pajek(artistGraph, 'artistGraph.net')
-		print "New artists written successfully!"
-		print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
-		print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
-	except IOError:
-		print "New artists could not be written..."		
+        # write_graph(artistGraph, 'artistGraph.net')
 
 def addFavorites(artist, favorites, artistGraph):
-	print "Add Favorites"
+	print "Adding favorites for %s" % (id2username(artist))
 	for user in favorites:
 		addWeight(artist, user, artistGraph, 'fav_weight')
-	try:
-		print "Writing out new artists..."
-		nx.write_pajek(artistGraph, 'artistGraph.net')
-		print "New artists written successfully!"
-		print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
-		print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
-	except IOError:
-		print "New artists could not be written..."		
+        # write_graph(artistGraph, 'artistGraph.net')
 
 def addComments(artist, comments, artistGraph):
-	print "Add Comments"
+	print "Adding comments for %s" % (id2username(artist))
 	for user in comments:
 		addWeight(artist, user, artistGraph, 'com_weight')
-	try:
-		print "Writing out new artists..."
-		nx.write_pajek(artistGraph, 'artistGraph.net')
-		print "New artists written successfully!"
-		print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
-		print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
-	except IOError:
-		print "New artists could not be written..."	
+        # write_graph(artistGraph, 'artistGraph.net')
 
 def addTracks(artist, tracks, artistGraph):
 	for track in tracks:
 	# get list of users who have favorited this user's track
 		favoriters = client.get('/tracks/' + str(track) + '/favoriters')
-		print "Add Favoriters"
+		print "Adding favoriters for %s" % (id2username(artist))
 		for user in favoriters:
 			addWeight(user.id, artist, artistGraph, 'fav_weight')
-		try:
-			print "Writing out new artists..."
-			nx.write_pajek(artistGraph, 'artistGraph.net')
-			print "New artists written successfully!"
-			print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
-			print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
-		except IOError:
-			print "New artists could not be written..."
 	
+                # write_graph(artistGraph, 'artistGraph.net')
+
 	# get list of users who have commented on this user's track			
 		commenters = client.get('/tracks/' + str(track) + '/comments')
 		print "Add Commenters"
 		for user in commenters:
 			addWeight(user.user_id, artist, artistGraph, 'com_weight')
-		try:
-			print "Writing out new artists..."
-			nx.write_pajek(artistGraph, 'artistGraph.net')
-			print "New artists written successfully!"
-			print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
-			print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
-		except IOError:
-			print "New artists could not be written..."			
+                # write_graph(artistGraph, 'artistGraph.net')
+

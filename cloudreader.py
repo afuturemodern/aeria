@@ -3,34 +3,48 @@ import networkx as nx
 import soundcloud
 import sc_api_calls as scac
 
-artistGraph = nx.MultiDiGraph()
 
-
-try:
+def read_graph(G, gfile):
     print "Reading in artist graph..."
-    artistGraph = nx.read_pajek('artistGraph.net')
-    print "Read successfully!"
-    print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
-    print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
-except IOError:
-    print "Could not find artistGraph"
+    try:
+        G = nx.read_pajek(gfile)
+        print "Read successfully!"
+        print "The artist graph currently contains " + str(len(G)) + " artists."
+        print "The artist graph currently contains " + str(nx.number_strongly_connected_components(G)) + " strongly connected components."
+    except IOError:
+        print "Could not find artistGraph"
 
-for artist in artistGraph.nodes():
+def write_graph(G, gfile):
+    try:
+        print "Writing out new artists..."
+        nx.write_pajek(G, gfile)
+        print "New artists written successfully!"
+        print "The artist graph currently contains " + str(len(G)) + " artists."
+        print "The artist graph currently contains " + str(nx.number_strongly_connected_components(G)) + " strongly connected components."
+    except IOError:
+        print "New artists could not be written..."
+
+def print_graph(G):
+    for artist in G.nodes():
 	if artist:
-		try:
-			username = scac.id2username(artist)
-			followings = artistGraph.successors(artist)
-			followers = artistGraph.predecessors(artist)
-			try:	
-				print "\t", username + " has " + str(len(followings)) + " followings"
-				print "\t", username + " follows " + ", ".join(map(lambda x: scac.id2username(x), followings))
-			except TypeError: 
-				print "No followings home!"	
-			try:	
-				print "\t", username + " has " + str(len(followers)) + " followers"
-				print "\t", username + " is followed by " + ", ".join(map(lambda x: scac.id2username(x), followers))
-			except TypeError:
-				print "No followers home!"
-			print "-"*40
-		except UnicodeError:
-			print "Artist's username not found"	
+	    try:
+		username = scac.id2username(artist)
+		followings = G.successors(artist)
+		followers = G.predecessors(artist)
+		try:	
+		    print "\t", username + " has " + str(len(followings)) + " followings"
+		    print "\t", username + " follows " + ", ".join(map(lambda x: scac.id2username(x), followings))
+	    	except TypeError: 
+                    print "No followings home!"	
+    		try:	
+                    print "\t", username + " has " + str(len(followers)) + " followers"
+                    print "\t", username + " is followed by " + ", ".join(map(lambda x: scac.id2username(x), followers))
+	    	except TypeError:
+                    print "No followers home!"
+                    print "-"*40
+	    except UnicodeError:
+    		print "Artist's username not found"	
+
+artistGraph = nx.MultiDiGraph()
+read_cloud(artistGraph, 'artistGraph.net')
+print_cloud(artistGraph)

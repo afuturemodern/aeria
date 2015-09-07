@@ -13,14 +13,14 @@ from cc_mp_classes import Consumer, Task, bookTasks
 # Each node is artist id, with edges weighted by activity between then.
 artistGraph = nx.MultiDiGraph()
 
-try:
-	print "Reading in artist graph..."
-	artistGraph = nx.read_pajek('artistGraph.net')
-	print "Read successfully!"
-	print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
-	print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
-except IOError:
-	print "Could not find artistGraph"
+#try:
+#	print "Reading in artist graph..."
+#	artistGraph = nx.read_pajek('artistGraph.net')
+#	print "Read successfully!"
+#	print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
+#	print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
+#except IOError:
+#	print "Could not find artistGraph"
 
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
