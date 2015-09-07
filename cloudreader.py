@@ -45,6 +45,6 @@ def print_graph(G):
 	    except UnicodeError:
     		print "Artist's username not found"	
 
-artistGraph = nx.MultiDiGraph()
-read_cloud(artistGraph, 'artistGraph.net')
-print_cloud(artistGraph)
+# artistGraph = nx.MultiDiGraph()
+# read_graph(artistGraph, 'artistGraph.net')
+# print_graph(artistGraph)
