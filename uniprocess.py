@@ -4,17 +4,14 @@ import soundcloud
 from sc_pagerank import computePR, initializePR
 import sc_api_calls as scac 
 
+from cloudreader import read_graph, write_graph
+from cloudprinter import print_graph
+
 # A global artist graph used to iterate through the various algorithms.
 # Each node is artist id, with edges weighted by activity between then.
 artistGraph = nx.MultiDiGraph()
 
-try:
-	print "Reading in artist graph..."
-	artistGraph = nx.read_graphml('artistGraph.graphml')
-	print "Read successfully!"
-except IOError:
-	print "Could not find artistGraph.graphml"
-
+# read_graph(artistGraph, 'artistGraph.net')
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
 raw_name = raw_input("Enter a soundcloud artist to analyze: ")
@@ -81,16 +78,7 @@ print "The artist graph currently contains " + str(len(artistGraph.nodes())) + "
 
 print "Here are their connections."
 
-for artist in artistGraph.nodes():
-	if artist:
-		username = scac.id2username(artist)
-		followings = artistGraph.successors(artist)
-		followers = artistGraph.predecessors(artist)	
-		print "\t", username + " has " + str(len(followings)) + " followings"
-		print "\t", username + " follows " + ", ".join(map(lambda x: scac.id2username(x), followings))
-		print "\t", username + " has " + str(len(followers)) + " followers"
-		print "\t", username + " is followed by " + ", ".join(map(lambda x: scac.id2username(x), followers))
-                print "-"*40
+print_graph(artistGraph)
 
 print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
 

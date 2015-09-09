@@ -11,7 +11,9 @@ from cloudreader import read_graph
 
 
 def post_to_cloud(G):
-    GeoffLoader.load(get_geoff(G))
+    geoff_string = get_geoff(G)
+    print(geoff_string)
+    GeoffLoader.load(geoff_string)
 
 # artistGraph = nx.MultiDiGraph()
 # read_graph(artistGraph, 'artistGraph.net')
