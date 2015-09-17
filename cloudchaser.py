@@ -1,6 +1,7 @@
 import sys
 import networkx as nx 
 import sqlite3 
+import pdb
 
 import soundcloud
 from sc_pagerank import computePR, initializePR
@@ -62,6 +63,7 @@ for t in range(depth):
 		if username:
 			print "\t", "Enqueueing: %s (%s)" % (username, artist)
 			artistGraph.add_node(artist)
+                        pdb.set_trace()
 			bookTasks(tasks, artist)
 			num_jobs += 1
 		else:
@@ -77,6 +79,7 @@ for t in range(depth):
 		tasks.put(None)
 
 	while num_jobs:
+                pdb.set_trace()
 		artist, action, newArtists = results.get()
 		if newArtists:
 			actions = {"followings": scac.addFollowings,
@@ -87,6 +90,7 @@ for t in range(depth):
 			# this is most likely a useless check as artist is already in the graph from above
 			if artistGraph.__contains__(artist):
 				# eg: addFollowings(artist, newArtists)
+                                #  pdb.set_trace()
 				actions[action](artist, newArtists, artistGraph)
 				artists_to_enqueue.extend(newArtists)
 			num_jobs -= 1

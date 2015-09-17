@@ -148,36 +148,36 @@ def addFollowings(artist, followings, artistGraph):
 	for user in followings:
 		addWeight(artist, user, artistGraph, 'fol_weight')
         # write_graph(artistGraph, 'artistGraph.net')
-        print "Posting artistGraph to cloud."
-        post_to_cloud(artistGraph)
-        print "artistGraph posted!"
+        # print "Posting artistGraph to cloud."
+        # post_to_cloud(artistGraph)
+        # print "artistGraph posted!"
 
 def addFollowers(artist, followers, artistGraph):
 	print "Adding followers for %s" % (id2username(artist))
 	for user in followers:
 		addWeight(user, artist, artistGraph, 'fol_weight')
         # write_graph(artistGraph, 'artistGraph.net')
-        print "Posting artistGraph to cloud."
-        post_to_cloud(artistGraph)
-        print "artistGraph posted!"
+        # print "Posting artistGraph to cloud."
+        # post_to_cloud(artistGraph)
+        # print "artistGraph posted!"
 
 def addFavorites(artist, favorites, artistGraph):
 	print "Adding favorites for %s" % (id2username(artist))
 	for user in favorites:
 		addWeight(artist, user, artistGraph, 'fav_weight')
         # write_graph(artistGraph, 'artistGraph.net')
-        print "Posting artistGraph to cloud."
-        post_to_cloud(artistGraph)
-        print "artistGraph posted!"
+        # print "Posting artistGraph to cloud."
+        # post_to_cloud(artistGraph)
+        # print "artistGraph posted!"
 
 def addComments(artist, comments, artistGraph):
 	print "Adding comments for %s" % (id2username(artist))
 	for user in comments:
 		addWeight(artist, user, artistGraph, 'com_weight')
         # write_graph(artistGraph, 'artistGraph.net')
-        print "Posting artistGraph to cloud."
-        post_to_cloud(artistGraph)
-        print "artistGraph posted!"
+        # print "Posting artistGraph to cloud."
+        # post_to_cloud(artistGraph)
+        # print "artistGraph posted!"
 
 def addTracks(artist, tracks, artistGraph):
 	for track in tracks:
@@ -188,9 +188,9 @@ def addTracks(artist, tracks, artistGraph):
 			addWeight(user.id, artist, artistGraph, 'fav_weight')
 	
                 # write_graph(artistGraph, 'artistGraph.net')
-                print "Posting artistGraph to cloud."
-                post_to_cloud(artistGraph)
-                print "artistGraph posted!"
+                # print "Posting artistGraph to cloud."
+                # post_to_cloud(artistGraph)
+                # print "artistGraph posted!"
 
 	# get list of users who have commented on this user's track			
 		commenters = client.get('/tracks/' + str(track) + '/comments')
@@ -198,7 +198,7 @@ def addTracks(artist, tracks, artistGraph):
 		for user in commenters:
 			addWeight(user.id, artist, artistGraph, 'com_weight')
                 # write_graph(artistGraph, 'artistGraph.net')
-                print "Posting artistGraph to cloud."
-                post_to_cloud(artistGraph)
-                print "artistGraph posted!"
+                # print "Posting artistGraph to cloud."
+                # post_to_cloud(artistGraph)
+                # print "artistGraph posted!"
 

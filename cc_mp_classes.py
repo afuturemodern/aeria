@@ -1,5 +1,6 @@
 import multiprocessing as mp 
 import sc_api_calls as scac
+import pdb
 
 class Consumer(mp.Process):
 	def __init__(self, task_queue, result_queue):
@@ -8,6 +9,7 @@ class Consumer(mp.Process):
 		self.result_queue = result_queue
 
 	def run(self):
+                pdb.set_trace()
 		proc_name = self.name
 		while True:
 			next_task = self.task_queue.get()

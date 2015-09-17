@@ -46,27 +46,27 @@ for t in range(depth):
                         artistGraph.add_node(artist)
 
 			newFollowings = scac.getFollowings(artist)
-			print "New followings: " + ", ".join([scac.id2username(user) for user in newFollowings])
+			print "New followings: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newFollowings])
 			scac.addFollowings(artist, newFollowings, artistGraph)
 			artists_to_enqueue.extend(newFollowings)
 
 			newFollowers = scac.getFollowers(artist)
-			print "New followers: " + ", ".join([scac.id2username(user) for user in newFollowers])
+			print "New followers: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newFollowers])
 			scac.addFollowers(artist, newFollowers, artistGraph)
 			artists_to_enqueue.extend(newFollowers)
 
 			newFavorites = scac.getFavorites(artist)
-			print "New Favorites: " + ", ".join([scac.id2username(user) for user in newFavorites])
+			print "New Favorites: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newFavorites])
 			scac.addFavorites(artist, newFavorites, artistGraph)
 			artists_to_enqueue.extend(newFavorites)
 
 			newComments = scac.getComments(artist)
-			print "New Comments: " + ", ".join([scac.id2username(user) for user in newComments])
+			print "New Comments: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newComments])
 			scac.addComments(artist, newComments, artistGraph)
 			artists_to_enqueue.extend(newComments)	
 
 			newTracks = scac.getTracks(artist)
-			print "New Tracks: " + ", ".join([scac.id2username(user) for user in newTracks])
+			print "New Tracks: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newTracks])
 			scac.addTracks(artist, newTracks, artistGraph)
 			artists_to_enqueue.extend(newTracks)	
 
@@ -82,7 +82,7 @@ print_graph(artistGraph)
 
 print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
 
-nx.write_graphml(artistGraph, 'artistGraph.graphml')
+# nx.write_graphml(artistGraph, 'artistGraph.graphml')
 
 # Go through the graph and compute each PR until it converges.
 iterations = 10
