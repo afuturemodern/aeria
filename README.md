@@ -3,6 +3,13 @@ cloudchaser
 
 Soundcloud artist recommendation tool
 
-Dependencies:
-soundcloud
-networkx
+Dependencies
+------------
+
+- soundcloud
+- networkx
+
+```
+pip install -r requirements
+```
+
