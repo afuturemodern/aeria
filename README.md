@@ -8,6 +8,8 @@ Dependencies
 
 - soundcloud
 - networkx
+- six
+- py2neo
 
 ```
 pip install -r requirements
