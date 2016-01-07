@@ -1,6 +1,7 @@
 decorator==4.0.6
 fudge==1.1.0
 networkx==1.10
+py2neo==2.0.8
 requests==2.9.1
 simplejson==3.8.1
 six==1.10.0
