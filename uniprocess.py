@@ -1,8 +1,8 @@
 import sys
-import networkx as nx 
+import networkx as nx
 import soundcloud
 from sc_pagerank import computePR, initializePR
-import sc_api_calls as scac 
+import sc_api_calls as scac
 
 from cloudreader import read_graph, write_graph
 from cloudprinter import print_graph
@@ -20,8 +20,8 @@ raw_name = raw_input("Enter a soundcloud artist to analyze: ")
 search = client.get('/users/', q = raw_name)[0]
 
 print "Artist interpreted as: %s" % search.username
-# need to compute all neighbors in given graph selection before we can compute the 
-# pr of each node. 
+# need to compute all neighbors in given graph selection before we can compute the
+# pr of each node.
 print "="*20
 
 # initialize the task queue
@@ -61,14 +61,14 @@ for t in range(depth):
 			artists_to_enqueue.extend(newFavorites)
 
 			newComments = scac.getComments(artist)
-			print "New Comments: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newComments])
+			print "New Comments: " + ", ".join([scac.id2username(comment, 'comments') if isinstance(scac.id2username(comment, 'comments'), str) else str(comment) for comment in newComments])
 			scac.addComments(artist, newComments, artistGraph)
-			artists_to_enqueue.extend(newComments)	
+			artists_to_enqueue.extend(newComments)
 
 			newTracks = scac.getTracks(artist)
-			print "New Tracks: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newTracks])
+			print "New Tracks: " + ", ".join([scac.id2username(track, 'tracks') if isinstance(scac.id2username(track, 'tracks'), str) else str(track) for track in newTracks])
 			scac.addTracks(artist, newTracks, artistGraph)
-			artists_to_enqueue.extend(newTracks)	
+			artists_to_enqueue.extend(newTracks)
 
 		else:
 			print "\t", "Artist ID %s is not query-able" % artist
