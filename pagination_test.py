@@ -20,5 +20,5 @@ while True:
 
     page += 1
     # start paging through results, 100 at a time
-    resultss = client.get('/tracks', order='created_at', limit=page_size,
+    results = client.get('/tracks', order='created_at', limit=page_size,
                         linked_partitioning=page)
