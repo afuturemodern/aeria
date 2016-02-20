@@ -1,13 +1,13 @@
 import sys
 import soundcloud
 import networkx as nx
+from py2neo import Graph
 from requests.exceptions import ConnectionError, HTTPError
 
-# from cloudreader import write_graph
-from clouder import post_to_cloud
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
 id2username_cache = {}
+artistGraph = Graph()
 
 def id2username(profile, kind='users'):
 	global id2username_dict
@@ -36,15 +36,34 @@ def id2username(profile, kind='users'):
 		print "\t"*2, "id2username(%s): unicode error in encoding username" % profile
 		return None
 
+# let's return tracks via a generator instead...
+def get_results(client, url, page_size=100):
+    
+    def get_next_results(results=None):
+        if results is None:
+            return client.get(url, order='created_at', limit=page_size, linked_partitioning=1)
+        next_href = getattr(results, 'next_href', None)
+        if next_href is None: 
+            return None
+        else: 
+            return client.get(next_href)
+
+    def yield_results():
+        # start results
+        results = get_next_results(None)
+        while results is not None:
+            for result in getattr(results, 'collection', []):
+                yield result
+            results = get_next_results(results)
+
+    return yield_results()
+
 def getFollowings(profile):
 	# get list of users who the artist is following.
-	# consider we may not want to always analyze the first 100, although it works since it should be
-	# the hundred most frequent
 	try:
-               followings = client.get('/users/' + str(profile) + '/followings/', limit=100)
-               usersFollowed = followings.collection
-               print "\t", "getFollowings: Analyzing " + id2username(profile) + "\'s " + str(len(usersFollowed)) + " followings..."
-               return [user.id for user in usersFollowed]
+               followings = get_results(client, '/users/' + str(profile) + '/followings/')
+               print "\t", "getFollowings: Analyzing " + id2username(profile) + "\'s " + str(len(followings)) + " followings..."
+               return followings 
 
 	except ConnectionError:
 		print "\t"*2, "getFollowings(%s): Connection Error" % profile
@@ -63,10 +82,9 @@ def getFollowings(profile):
 
 def getFollowers(profile):
 	try:
-		followers = client.get('/users/' + str(profile) + '/followers', limit=100)
-                whoFollows = followers.collection
-		print "\t", "getFollowers: Analyzing " + id2username(profile) + "\'s " + str(len(whoFollows)) + " followers..."
-		return [user.id for user in whoFollows]
+                followers = get_results(client, '/users/' + str(profile) + '/followers/')
+		print "\t", "getFollowers: Analyzing " + id2username(profile) + "\'s " + str(len(followers)) + " followers..."
+		return followers
 	except ConnectionError:
 		print "\t"*2, "getFollowers(%s): Connection Error" % profile
 		return []
@@ -85,9 +103,9 @@ def getFollowers(profile):
 
 def getFavorites(profile):
 	try:
-		favorites = client.get('/users/' + str(profile) + '/favorites', limit=100)
+		favorites = get_results('/users/' + str(profile) + '/favorites')
 		print "\t", "getFavorites: Analyzing " + id2username(profile) + "\'s " + str(len(favorites)) + " favorites..."
-		return [favorite.user['id'] for favorite in favorites]
+		return favorites 
 	except ConnectionError:
 		print "\t"*2, "getFavorites(%s): Connection Error" % profile
 		return []
@@ -105,7 +123,7 @@ def getFavorites(profile):
 
 def getComments(profile):
 	try:
-		comments = client.get('/users/' + str(profile) + '/comments', limit=100)
+		comments = get_results('/users/' + str(profile) + '/comments')
 		print "\t", "getComments: Analyzing " + id2username(profile)  + "\'s " + str(len(comments)) + " comments..."
 		return [comment.user['id'] for comment in comments]
 	except ConnectionError:
@@ -125,7 +143,7 @@ def getComments(profile):
 
 def getTracks(profile):
 	try:
-		tracks = client.get('/users/' + str(profile) + '/tracks', limit=100)
+		tracks = get_results('/users/' + str(profile) + '/tracks')
                 print "\t", "getTracks: Analyzing " + id2username(profile) + "\'s " + str(len(tracks)) + " tracks..."
 		return [track.id for track in tracks]
 	except ConnectionError:
@@ -144,73 +162,53 @@ def getTracks(profile):
 		print "\t"*2, 'getTracks(%s): Error: %s, Status Code: %d' % (profile, e.message, e.response.status_code)
 	 	return []
 
-def getWeight(profile, neighbor, artistGraph, attr):
-        if artistGraph.has_edge(profile, neighbor, key=attr):
-                return artistGraph.get_edge_data(profile, neighbor, key=attr)['weight'] + 1
+def getWeight(profile, neighbor, artistNet, attr):
+        if artistNet.has_edge(profile, neighbor, key=attr):
+                return artistNet.get_edge_data(profile, neighbor, key=attr)['weight'] + 1
         else:
           return 1
 
-def addWeight(profile, neighbor, artistGraph, attr):
-	new_weight = getWeight(profile, neighbor, artistGraph, attr)
-	artistGraph.add_edge(profile, neighbor, key=attr, weight=new_weight)
+def addWeight(profile, neighbor, artistNet, attr):
+	new_weight = getWeight(profile, neighbor, artistNet, attr)
+	artistNet.add_edge(profile, neighbor, key=attr, weight=new_weight)
 	print "\t", "%s --> %s" % (id2username(profile), id2username(neighbor))
+        return new_weight
 
-def addFollowings(artist, followings, artistGraph):
+def addAction(action, profile, neighbor, weight):
+        query = '(profile {username: {username} } ) - [interaction : {action} { weight: [ {weight} ] } ] -> (neighbor {username: {neighbor} } )' 
+        artistGraph.cypher.execute(query, {'username': id2username(profile), 'action': action, 'neighbor': id2username(neighbor), 'weight': weight})
+
+def addFollowings(artist, followings, artistNet):
 	print "Adding followings for %s" % (id2username(artist))
 	for user in followings:
-		addWeight(artist, user, artistGraph, 'fol_weight')
-        # write_graph(artistGraph, 'artistGraph.net')
-        # print "Posting artistGraph to cloud."
-        # post_to_cloud(artistGraph)
-        # print "artistGraph posted!"
+                addAction(follows, artist, user, addWeight(artist, user, artistNet, 'fol_weight'))
 
-def addFollowers(artist, followers, artistGraph):
+def addFollowers(artist, followers, artistNet):
 	print "Adding followers for %s" % (id2username(artist))
 	for user in followers:
-		addWeight(user, artist, artistGraph, 'fol_weight')
-        # write_graph(artistGraph, 'artistGraph.net')
-        # print "Posting artistGraph to cloud."
-        # post_to_cloud(artistGraph)
-        # print "artistGraph posted!"
+                addAction(follows, user, artist, addWeight(user, artist, artistNet, 'fol_weight'))
 
-def addFavorites(artist, favorites, artistGraph):
+def addFavorites(artist, favorites, artistNet):
 	print "Adding favorites for %s" % (id2username(artist))
 	for user in favorites:
-		addWeight(artist, user, artistGraph, 'fav_weight')
-        # write_graph(artistGraph, 'artistGraph.net')
-        # print "Posting artistGraph to cloud."
-        # post_to_cloud(artistGraph)
-        # print "artistGraph posted!"
+		addAction(favorites, artist, user, addWeight(artist, user, artistNet, 'fav_weight')
 
-def addComments(artist, comments, artistGraph):
+def addComments(artist, comments, artistNet):
 	print "Adding comments for %s" % (id2username(artist))
 	for user in comments:
-		addWeight(artist, user, artistGraph, 'com_weight')
-        # write_graph(artistGraph, 'artistGraph.net')
-        # print "Posting artistGraph to cloud."
-        # post_to_cloud(artistGraph)
-        # print "artistGraph posted!"
+		addAction(comments, artist, user, addWeight(artist, user, artistNet, 'com_weight'))
 
-def addTracks(artist, tracks, artistGraph):
+def addTracks(artist, tracks, artistNet):
 	for track in tracks:
 	# get list of users who have favorited this user's track
 		favoriters = client.get('/tracks/' + str(track) + '/favoriters')
 		print "Adding favoriters for %s" % (id2username(artist))
 		for user in favoriters:
-			addWeight(user.id, artist, artistGraph, 'fav_weight')
-
-                # write_graph(artistGraph, 'artistGraph.net')
-                # print "Posting artistGraph to cloud."
-                # post_to_cloud(artistGraph)
-                # print "artistGraph posted!"
+			addAction(favorites, user.id, artist, addWeight(user.id, artist, artistNet, 'fav_weight'))
 
 	# get list of users who have commented on this user's track
 		commenters = client.get('/tracks/' + str(track) + '/comments')
 		print "Add Commenters"
 		for comment in commenters:
-			addWeight(comment.user['id'], artist, artistGraph, 'com_weight')
-                # write_graph(artistGraph, 'artistGraph.net')
-                # print "Posting artistGraph to cloud."
-                # post_to_cloud(artistGraph)
-                # print "artistGraph posted!"
+			addAction(comments, comment.user['id'], artist, addWeight(comment.user['id'], artist, artistNet, 'com_weight'))
 
