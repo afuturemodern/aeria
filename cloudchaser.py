@@ -1,7 +1,6 @@
 import sys
 import networkx as nx 
 import sqlite3 
-import pdb
 
 import soundcloud
 from sc_pagerank import computePR, initializePR
@@ -10,14 +9,10 @@ import sc_api_calls as scac
 import multiprocessing as mp 
 from cc_mp_classes import Consumer, Task, bookTasks
 
-from cloudreader import read_graph 
-from clouder import post_to_cloud
-
 # A global artist graph used to iterate through the various algorithms.
 # Each node is artist id, with edges weighted by activity between then.
 artistGraph = nx.MultiDiGraph()
 
-# read_graph(artistGraph, 'artistGraph.net')
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
 raw_name = raw_input("Enter a soundcloud artist to analyze: ")
@@ -63,7 +58,6 @@ for t in range(depth):
 		if username:
 			print "\t", "Enqueueing: %s (%s)" % (username, artist)
 			artistGraph.add_node(artist)
-                        pdb.set_trace()
 			bookTasks(tasks, artist)
 			num_jobs += 1
 		else:
@@ -79,7 +73,6 @@ for t in range(depth):
 		tasks.put(None)
 
 	while num_jobs:
-                pdb.set_trace()
 		artist, action, newArtists = results.get()
 		if newArtists:
 			actions = {"followings": scac.addFollowings,
@@ -90,7 +83,6 @@ for t in range(depth):
 			# this is most likely a useless check as artist is already in the graph from above
 			if artistGraph.__contains__(artist):
 				# eg: addFollowings(artist, newArtists)
-                                #  pdb.set_trace()
 				actions[action](artist, newArtists, artistGraph)
 				artists_to_enqueue.extend(newArtists)
 			num_jobs -= 1
@@ -103,10 +95,6 @@ print "The artist graph currently contains " + str(len(artistGraph)) + " artists
 
 print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."	
 	
-print "Posting artistGraph to cloud."
-post_to_cloud(artistGraph)
-print "artistGraph posted!"
-
 my_component = artistGraph
 
 for component in nx.strongly_connected_component_subgraphs(artistGraph):

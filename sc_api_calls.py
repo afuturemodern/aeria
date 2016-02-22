@@ -191,7 +191,7 @@ def addFollowers(artist, followers, artistNet):
 def addFavorites(artist, favorites, artistNet):
 	print "Adding favorites for %s" % (id2username(artist))
 	for user in favorites:
-		addAction(favorites, artist, user, addWeight(artist, user, artistNet, 'fav_weight')
+		addAction(favorites, artist, user, addWeight(artist, user, artistNet, 'fav_weight'))
 
 def addComments(artist, comments, artistNet):
 	print "Adding comments for %s" % (id2username(artist))
@@ -201,14 +201,14 @@ def addComments(artist, comments, artistNet):
 def addTracks(artist, tracks, artistNet):
 	for track in tracks:
 	# get list of users who have favorited this user's track
-		favoriters = client.get('/tracks/' + str(track) + '/favoriters')
+		favoriters = get_results('/tracks/' + str(track) + '/favoriters')
 		print "Adding favoriters for %s" % (id2username(artist))
 		for user in favoriters:
 			addAction(favorites, user.id, artist, addWeight(user.id, artist, artistNet, 'fav_weight'))
 
 	# get list of users who have commented on this user's track
-		commenters = client.get('/tracks/' + str(track) + '/comments')
-		print "Add Commenters"
+		commenters = get_results('/tracks/' + str(track) + '/comments')
+		print "Adding commenters for %s" % (id2username(artist))
 		for comment in commenters:
 			addAction(comments, comment.user['id'], artist, addWeight(comment.user['id'], artist, artistNet, 'com_weight'))
 

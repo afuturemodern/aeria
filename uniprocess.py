@@ -4,7 +4,6 @@ import soundcloud
 from sc_pagerank import computePR, initializePR
 import sc_api_calls as scac
 
-from cloudreader import read_graph, write_graph
 from cloudprinter import print_graph
 
 # A global artist graph used to iterate through the various algorithms.
@@ -81,8 +80,6 @@ print "Here are their connections."
 print_graph(artistGraph)
 
 print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
-
-# nx.write_graphml(artistGraph, 'artistGraph.graphml')
 
 # Go through the graph and compute each PR until it converges.
 iterations = 10
