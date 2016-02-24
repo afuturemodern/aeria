@@ -3,6 +3,7 @@ import soundcloud
 import networkx as nx
 from py2neo import Graph
 from requests.exceptions import ConnectionError, HTTPError
+from utils import get_results, handle_http_errors
 
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
@@ -36,131 +37,36 @@ def id2username(profile, kind='users'):
 		print "\t"*2, "id2username(%s): unicode error in encoding username" % profile
 		return None
 
-# let's return tracks via a generator instead...
-def get_results(client, url, page_size=100):
-    
-    def get_next_results(results=None):
-        if results is None:
-            return client.get(url, order='created_at', limit=page_size, linked_partitioning=1)
-        next_href = getattr(results, 'next_href', None)
-        if next_href is None: 
-            return None
-        else: 
-            return client.get(next_href)
-
-    def yield_results():
-        # start results
-        results = get_next_results(None)
-        while results is not None:
-            for result in getattr(results, 'collection', []):
-                yield result
-            results = get_next_results(results)
-
-    return yield_results()
-
+@handle_http_errors
 def getFollowings(profile):
-	# get list of users who the artist is following.
-	try:
-               followings = get_results(client, '/users/' + str(profile) + '/followings/')
-               print "\t", "getFollowings: Analyzing " + id2username(profile) + "\'s " + str(len(followings)) + " followings..."
-               return followings 
+    # get list of users who the artist is following.
+    followings = get_results(client, '/users/{0:s}/followings/'.format(profile))
+    #print "\t", "getFollowings: Analyzing " + id2username(profile) + "\'s " + str(len(followings)) + " followings..."
+    return followings
 
-	except ConnectionError:
-		print "\t"*2, "getFollowings(%s): Connection Error" % profile
-		return []
-	except HTTPError, e:
-		return []
-	except TypeError:
-		print "\t"*2, "getFollowings(%s): Artist was not there!" % profile
-		return []
-	except RuntimeError, e:
-		print "\t", "getFollowings(%s): Runtime Error" % profile
-		return []
-	except Exception, e:
-		print "\t"*2, 'getFollowings(%s): Error: %s' % (profile, e.message)
-		return []
-
+@handle_http_errors
 def getFollowers(profile):
-	try:
-                followers = get_results(client, '/users/' + str(profile) + '/followers/')
-		print "\t", "getFollowers: Analyzing " + id2username(profile) + "\'s " + str(len(followers)) + " followers..."
-		return followers
-	except ConnectionError:
-		print "\t"*2, "getFollowers(%s): Connection Error" % profile
-		return []
-	except HTTPError, e:
-		return []
-	except TypeError:
-		print "\t"*2, "getFollowers(%s): Artist was not there!" % profile
-		return []
-	except RuntimeError, e:
-		print "\t"*2, "getFollowers(%s): Runtime Error" % profile
-		return []
-	except Exception, e:
-		print "\t"*2, 'getFollowers(%s): Error: %s, Status Code: %d' % (profile, e.message, e.response.status_code)
+    followers = get_results(client, '/users/{0:s}/followers/'.format(profile))
+    #print "\t", "getFollowers: Analyzing " + id2username(profile) + "\'s " + str(len(followers)) + " followers..."
+    return followers
 
-		return []
-
+@handle_http_errors
 def getFavorites(profile):
-	try:
-		favorites = get_results('/users/' + str(profile) + '/favorites')
-		print "\t", "getFavorites: Analyzing " + id2username(profile) + "\'s " + str(len(favorites)) + " favorites..."
-		return favorites 
-	except ConnectionError:
-		print "\t"*2, "getFavorites(%s): Connection Error" % profile
-		return []
-	except HTTPError, e:
-		return []
-	except TypeError:
-		print "\t"*2, "getFavorites(%s): Artist was not there!" % profile
-		return []
-	except RuntimeError, e:
-                print "\t"*2, "getFavorites(%s): Runtime Error" % profile
-		return []
-	except Exception, e:
-		print "\t"*2, 'getFavorites(%s): Error: %s, Status Code: %d' % (profile, e.message, e.response.status_code)
-		return []
+    favorites = get_results('/users/{0:s}/favorites/'.format(profile))
+    #print "\t", "getFavorites: Analyzing " + id2username(profile) + "\'s " + str(len(favorites)) + " favorites..."
+    return favorites
 
+@handle_http_errors
 def getComments(profile):
-	try:
-		comments = get_results('/users/' + str(profile) + '/comments')
-		print "\t", "getComments: Analyzing " + id2username(profile)  + "\'s " + str(len(comments)) + " comments..."
-		return [comment.user['id'] for comment in comments]
-	except ConnectionError:
-		print "\t"*2, "getComments(%s): Connection Error" % profile
-		return []
-	except HTTPError, e:
-		return []
-	except TypeError:
-		print "\t"*2, "getComments(%s): Artist was not there!" % profile
-		return []
-	except RuntimeError, e:
-		print "\t"*2, "getComments(%s): Runtime Error" % profile
-		return []
-	except Exception, e:
-		print "\t"*2, 'getComments(%s): Error: %s, Status Code: %d' % (profile, e.message, e.response.status_code)
-		return []
+    comments = get_results('/users/{0:s}/comments/'.format(profile))
+    #print "\t", "getComments: Analyzing " + id2username(profile)  + "\'s " + str(len(comments)) + " comments..."
+    return [comment.user['id'] for comment in comments]
 
+@handle_http_errors
 def getTracks(profile):
-	try:
-		tracks = get_results('/users/' + str(profile) + '/tracks')
-                print "\t", "getTracks: Analyzing " + id2username(profile) + "\'s " + str(len(tracks)) + " tracks..."
-		return [track.id for track in tracks]
-	except ConnectionError:
-		print "\t"*2, "getTracks(%s): Connection Error" % profile
-		return []
-	except HTTPError, e:
-		return []
-	except TypeError:
-		print "\t"*2, "getTracks(%s): Artist was not there!" % profile
-		return []
-	except RuntimeError, e:
-                print "\t"*2, "getTracks(%s): Runtime Error" % profile
-		return []
-	except Exception, e:
-                raise
-		print "\t"*2, 'getTracks(%s): Error: %s, Status Code: %d' % (profile, e.message, e.response.status_code)
-	 	return []
+    tracks = get_results('/users/{0:s}/tracks/'.format(profile))
+    #print "\t", "getTracks: Analyzing " + id2username(profile) + "\'s " + str(len(tracks)) + " tracks..."
+    return [track.id for track in tracks]
 
 def getWeight(profile, neighbor, artistNet, attr):
         if artistNet.has_edge(profile, neighbor, key=attr):
@@ -175,7 +81,7 @@ def addWeight(profile, neighbor, artistNet, attr):
         return new_weight
 
 def addAction(action, profile, neighbor, weight):
-        query = '(profile {username: {username} } ) - [interaction : {action} { weight: [ {weight} ] } ] -> (neighbor {username: {neighbor} } )' 
+        query = '(profile {username: {username} } ) - [interaction : {action} { weight: [ {weight} ] } ] -> (neighbor {username: {neighbor} } )'
         artistGraph.cypher.execute(query, {'username': id2username(profile), 'action': action, 'neighbor': id2username(neighbor), 'weight': weight})
 
 def addFollowings(artist, followings, artistNet):
