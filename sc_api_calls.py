@@ -46,25 +46,25 @@ def getFollowings(profile):
 
 @handle_http_errors
 def getFollowers(profile):
-    followers = get_results(client, '/users/{0:s}/followers/'.format(profile))
+    followers = get_results(client, '/users/{0:s}/followers/'.format(str(profile)))
     #print "\t", "getFollowers: Analyzing " + id2username(profile) + "\'s " + str(len(followers)) + " followers..."
     return followers
 
 @handle_http_errors
 def getFavorites(profile):
-    favorites = get_results('/users/{0:s}/favorites/'.format(profile))
+    favorites = get_results('/users/{0:s}/favorites/'.format(str(profile)))
     #print "\t", "getFavorites: Analyzing " + id2username(profile) + "\'s " + str(len(favorites)) + " favorites..."
     return favorites
 
 @handle_http_errors
 def getComments(profile):
-    comments = get_results('/users/{0:s}/comments/'.format(profile))
+    comments = get_results('/users/{0:s}/comments/'.format(str(profile)))
     #print "\t", "getComments: Analyzing " + id2username(profile)  + "\'s " + str(len(comments)) + " comments..."
     return [comment.user['id'] for comment in comments]
 
 @handle_http_errors
 def getTracks(profile):
-    tracks = get_results('/users/{0:s}/tracks/'.format(profile))
+    tracks = get_results('/users/{0:s}/tracks/'.format(str(profile)))
     #print "\t", "getTracks: Analyzing " + id2username(profile) + "\'s " + str(len(tracks)) + " tracks..."
     return [track.id for track in tracks]
 
