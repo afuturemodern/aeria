@@ -58,8 +58,7 @@ for t in range(depth):
         if username:
             print "\t", "Enqueueing: %s (%s)" % (username, artist)
             artistGraph.add_node(artist)
-            bookTasks(tasks, artist)
-            num_jobs += 1
+            num_jobs += bookTasks(tasks, artist)
         else:
             print "\t", "Artist ID %s is not query-able" % artist
             unavailable_artists.append(artist)
@@ -74,6 +73,7 @@ for t in range(depth):
 
     while num_jobs:
         artist, action, newArtists = results.get()
+        #print artist, action, newArtists, num_jobs
         if newArtists:
             actions = {"followings": scac.addFollowings,
                         "followers": scac.addFollowers,
@@ -85,7 +85,7 @@ for t in range(depth):
                 # eg: addFollowings(artist, newArtists)
                 actions[action](artist, newArtists, artistGraph)
                 artists_to_enqueue.extend(newArtists)
-            num_jobs -= 1
+        num_jobs -= 1
 
     print "\t", "--Finished all jobs!"
 
