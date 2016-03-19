@@ -24,16 +24,16 @@ def handle_http_errors(fn):
     def wrapped(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
-        except ConnectionError:
-            print "\t"*2, "{0:s}: Connection Error".format(fn.__name__)
+        except ConnectionError, e:
+            print "\t"*2, "{0:s}: Connection Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message)
             return []
         except HTTPError, e:
             return []
-        except TypeError:
-            print "\t"*2, "{0:s}: Type Error".format(fn.__name__)
+        except TypeError, e:
+            print "\t"*2, "{0:s}: Type Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message)
             return []
         except RuntimeError, e:
-            print "\t", "{0:s}: Runtime Error".format(fn.__name__)
+            print "\t", "{0:s}: Runtime Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message)
             return []
         except Exception, e:
             if hasattr(e, 'response'):
