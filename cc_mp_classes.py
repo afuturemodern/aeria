@@ -43,3 +43,5 @@ def bookTasks(tasksQueue, artist):
                 "tracks"]
     for action in actions:
         tasksQueue.put(Task(artist, action))
+    # number of tasks we've added
+    return len(actions)
