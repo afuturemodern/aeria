@@ -1,12 +1,12 @@
 import sys
-import networkx as nx 
-import sqlite3 
+import networkx as nx
+import sqlite3
 
 import soundcloud
 from sc_pagerank import computePR, initializePR
 import sc_api_calls as scac
 
-import multiprocessing as mp 
+import multiprocessing as mp
 from cc_mp_classes import Consumer, Task, bookTasks
 
 # A global artist graph used to iterate through the various algorithms.
@@ -26,8 +26,8 @@ tasks = mp.Queue()
 results = mp.Queue()
 
 print "Artist interpreted as: %s" % search.username
-# need to compute all neighbors in given graph selection before we can compute the 
-# pr of each node. 
+# need to compute all neighbors in given graph selection before we can compute the
+# pr of each node.
 print "="*20
 
 # initialize the task queue
@@ -44,64 +44,64 @@ unavailable_artists = []
 
 for t in range(depth):
 
-	print "Iteration " + str(t)
-	consumers = [Consumer(tasks, results) for i in xrange(num_consumers)]
-	for w in consumers:
-		w.start()
+    print "Iteration " + str(t)
+    consumers = [Consumer(tasks, results) for i in xrange(num_consumers)]
+    for w in consumers:
+        w.start()
 
-	# enqueue jobs
-	num_jobs = 0
-	artists_to_enqueue = list(set(artists_to_enqueue))
+    # enqueue jobs
+    num_jobs = 0
+    artists_to_enqueue = list(set(artists_to_enqueue))
 
-	for artist in artists_to_enqueue:
-		username = scac.id2username(artist)
-		if username:
-			print "\t", "Enqueueing: %s (%s)" % (username, artist)
-			artistGraph.add_node(artist)
-			bookTasks(tasks, artist)
-			num_jobs += 1
-		else:
-			print "\t", "Artist ID %s is not query-able" % artist
-			unavailable_artists.append(artist)
+    for artist in artists_to_enqueue:
+        username = scac.id2username(artist)
+        if username:
+            print "\t", "Enqueueing: %s (%s)" % (username, artist)
+            artistGraph.add_node(artist)
+            bookTasks(tasks, artist)
+            num_jobs += 1
+        else:
+            print "\t", "Artist ID %s is not query-able" % artist
+            unavailable_artists.append(artist)
 
-	print "\t", "--%d jobs enqueued" % num_jobs
+    print "\t", "--%d jobs enqueued" % num_jobs
 
-	artists_to_enqueue = []
+    artists_to_enqueue = []
 
-	# poison pill to kill off all workers when we finish
-	for i in xrange(num_consumers):
-		tasks.put(None)
+    # poison pill to kill off all workers when we finish
+    for i in xrange(num_consumers):
+        tasks.put(None)
 
-	while num_jobs:
-		artist, action, newArtists = results.get()
-		if newArtists:
-			actions = {"followings": scac.addFollowings,
-						"followers": scac.addFollowers,
-						"favorites": scac.addFavorites,
-						"comments": scac.addComments,
-						"tracks": scac.addTracks}
-			# this is most likely a useless check as artist is already in the graph from above
-			if artistGraph.__contains__(artist):
-				# eg: addFollowings(artist, newArtists)
-				actions[action](artist, newArtists, artistGraph)
-				artists_to_enqueue.extend(newArtists)
-			num_jobs -= 1
+    while num_jobs:
+        artist, action, newArtists = results.get()
+        if newArtists:
+            actions = {"followings": scac.addFollowings,
+                        "followers": scac.addFollowers,
+                        "favorites": scac.addFavorites,
+                        "comments": scac.addComments,
+                        "tracks": scac.addTracks}
+            # this is most likely a useless check as artist is already in the graph from above
+            if artistGraph.__contains__(artist):
+                # eg: addFollowings(artist, newArtists)
+                actions[action](artist, newArtists, artistGraph)
+                artists_to_enqueue.extend(newArtists)
+            num_jobs -= 1
 
-	print "\t", "--Finished all jobs!"
+    print "\t", "--Finished all jobs!"
 
-	# if we reach here, we've finished processing all artist tasks
+    # if we reach here, we've finished processing all artist tasks
 
 print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
 
-print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."	
-	
+print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
+
 my_component = artistGraph
 
 for component in nx.strongly_connected_component_subgraphs(artistGraph):
-	if search.id in component:
-		my_component = component
+    if search.id in component:
+        my_component = component
 
-print "This artist's clique currently contains " + str(len(artistGraph)) + " artists."		
+print "This artist's clique currently contains " + str(len(artistGraph)) + " artists."
 
 # Go through the graph and compute each PR until it converges.
 iterations = 10
@@ -111,7 +111,7 @@ computePR(my_component , 0.85, iterations)
 prList = []
 
 for artist in my_component.nodes():
-	prList.append((artist, my_component.node[artist]['currPR']))
+    prList.append((artist, my_component.node[artist]['currPR']))
 
 prList.sort(key = lambda tup: tup[1]) # Sort the list in place
 
@@ -120,12 +120,5 @@ prList.reverse() # order by descending PR
 print ("Here are some artists similar to " + str(search.username) )
 
 for item in prList[0:10]:
-	artist = scac.id2username(item[0])
-	print artist, item[1]
-
-
-		
-        	    
-
-
-
+    artist = scac.id2username(item[0])
+    print artist, item[1]
