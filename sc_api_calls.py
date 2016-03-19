@@ -13,21 +13,21 @@ artistGraph = Graph()
 @handle_http_errors
 def id2username(profile, kind='users'):
     global id2username_dict
-        username = id2username_cache.get(profile, None)
-        if username is not None: return username
+    username = id2username_cache.get(profile, None)
+    if username is not None: return username
 
-        # username is none, we don't have it in cache
-        result = client.get('/%s/%s' % (kind, str(profile)))
-        if kind == 'comments':
-            username = result.user['username']
-        elif kind == 'tracks':
-            username = result.title
-        else:
-            username = result.username
-        # encode it correctly
-        username = str(username.encode('utf-8'))
-        id2username_cache[profile] = username
-        return username
+    # username is none, we don't have it in cache
+    result = client.get('/%s/%s' % (kind, str(profile)))
+    if kind == 'comments':
+        username = result.user['username']
+    elif kind == 'tracks':
+        username = result.title
+    else:
+        username = result.username
+    # encode it correctly
+    username = str(username.encode('utf-8'))
+    id2username_cache[profile] = username
+    return username
 
 @handle_http_errors
 def getFollowings(profile):
@@ -65,21 +65,21 @@ def addWeight(profile, neighbor, artistNet, attr):
     new_weight = getWeight(profile, neighbor, artistNet, attr)
     artistNet.add_edge(profile, neighbor, key=attr, weight=new_weight)
     print "\t", "%s --> %s" % (id2username(profile), id2username(neighbor))
-        return new_weight
+    return new_weight
 
 def addAction(action, profile, neighbor, weight):
-        query = '(profile {username: {username} } ) - [interaction : {action} { weight: [ {weight} ] } ] -> (neighbor {username: {neighbor} } )'
-        artistGraph.cypher.execute(query, {'username': id2username(profile), 'action': action, 'neighbor': id2username(neighbor), 'weight': weight})
+    query = '(profile {username: {username} } ) - [interaction : {action} { weight: [ {weight} ] } ] -> (neighbor {username: {neighbor} } )'
+    artistGraph.cypher.execute(query, {'username': id2username(profile), 'action': action, 'neighbor': id2username(neighbor), 'weight': weight})
 
 def addFollowings(artist, followings, artistNet):
     print "Adding followings for %s" % (id2username(artist))
     for user in followings:
-                addAction(follows, artist, user, addWeight(artist, user, artistNet, 'fol_weight'))
+        addAction(follows, artist, user, addWeight(artist, user, artistNet, 'fol_weight'))
 
 def addFollowers(artist, followers, artistNet):
     print "Adding followers for %s" % (id2username(artist))
     for user in followers:
-                addAction(follows, user, artist, addWeight(user, artist, artistNet, 'fol_weight'))
+        addAction(follows, user, artist, addWeight(user, artist, artistNet, 'fol_weight'))
 
 def addFavorites(artist, favorites, artistNet):
     print "Adding favorites for %s" % (id2username(artist))
@@ -104,4 +104,3 @@ def addTracks(artist, tracks, artistNet):
         print "Adding commenters for %s" % (id2username(artist))
         for comment in commenters:
             addAction(comments, comment.user['id'], artist, addWeight(comment.user['id'], artist, artistNet, 'com_weight'))
-

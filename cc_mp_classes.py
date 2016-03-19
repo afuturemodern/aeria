@@ -1,4 +1,4 @@
-import multiprocessing as mp 
+import multiprocessing as mp
 import sc_api_calls as scac
 
 class Consumer(mp.Process):
@@ -29,9 +29,9 @@ class Task(object):
                     "favorites": scac.getFavorites,
                     "comments": scac.getComments,
                     "tracks": scac.getTracks}
-                initialResults = actions[self.action](self.artist)
-                results = list(set([artist for artist in initialResults if scac.id2username(artist)]))
-                return results
+        initialResults = actions[self.action](self.artist)
+        results = list(set([artist for artist in initialResults if scac.id2username(artist)]))
+        return results
     def __str__(self):
         return 'Get %s: %s' % (self.action, self.artist)
 
@@ -42,4 +42,4 @@ def bookTasks(tasksQueue, artist):
                 "comments",
                 "tracks"]
     for action in actions:
-        tasksQueue.put(Task(artist, action))        
+        tasksQueue.put(Task(artist, action))
