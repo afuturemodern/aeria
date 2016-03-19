@@ -12,7 +12,7 @@ artistGraph = Graph()
 
 @handle_http_errors
 def id2username(profile, kind='users'):
-	global id2username_dict
+    global id2username_dict
         username = id2username_cache.get(profile, None)
         if username is not None: return username
 
@@ -62,9 +62,9 @@ def getWeight(profile, neighbor, artistNet, attr):
           return 1
 
 def addWeight(profile, neighbor, artistNet, attr):
-	new_weight = getWeight(profile, neighbor, artistNet, attr)
-	artistNet.add_edge(profile, neighbor, key=attr, weight=new_weight)
-	print "\t", "%s --> %s" % (id2username(profile), id2username(neighbor))
+    new_weight = getWeight(profile, neighbor, artistNet, attr)
+    artistNet.add_edge(profile, neighbor, key=attr, weight=new_weight)
+    print "\t", "%s --> %s" % (id2username(profile), id2username(neighbor))
         return new_weight
 
 def addAction(action, profile, neighbor, weight):
@@ -72,36 +72,36 @@ def addAction(action, profile, neighbor, weight):
         artistGraph.cypher.execute(query, {'username': id2username(profile), 'action': action, 'neighbor': id2username(neighbor), 'weight': weight})
 
 def addFollowings(artist, followings, artistNet):
-	print "Adding followings for %s" % (id2username(artist))
-	for user in followings:
+    print "Adding followings for %s" % (id2username(artist))
+    for user in followings:
                 addAction(follows, artist, user, addWeight(artist, user, artistNet, 'fol_weight'))
 
 def addFollowers(artist, followers, artistNet):
-	print "Adding followers for %s" % (id2username(artist))
-	for user in followers:
+    print "Adding followers for %s" % (id2username(artist))
+    for user in followers:
                 addAction(follows, user, artist, addWeight(user, artist, artistNet, 'fol_weight'))
 
 def addFavorites(artist, favorites, artistNet):
-	print "Adding favorites for %s" % (id2username(artist))
-	for user in favorites:
-		addAction(favorites, artist, user, addWeight(artist, user, artistNet, 'fav_weight'))
+    print "Adding favorites for %s" % (id2username(artist))
+    for user in favorites:
+        addAction(favorites, artist, user, addWeight(artist, user, artistNet, 'fav_weight'))
 
 def addComments(artist, comments, artistNet):
-	print "Adding comments for %s" % (id2username(artist))
-	for user in comments:
-		addAction(comments, artist, user, addWeight(artist, user, artistNet, 'com_weight'))
+    print "Adding comments for %s" % (id2username(artist))
+    for user in comments:
+        addAction(comments, artist, user, addWeight(artist, user, artistNet, 'com_weight'))
 
 def addTracks(artist, tracks, artistNet):
-	for track in tracks:
-	# get list of users who have favorited this user's track
-		favoriters = get_results(client, '/tracks/' + str(track) + '/favoriters')
-		print "Adding favoriters for %s" % (id2username(artist))
-		for user in favoriters:
-			addAction(favorites, user.id, artist, addWeight(user.id, artist, artistNet, 'fav_weight'))
+    for track in tracks:
+    # get list of users who have favorited this user's track
+        favoriters = get_results(client, '/tracks/' + str(track) + '/favoriters')
+        print "Adding favoriters for %s" % (id2username(artist))
+        for user in favoriters:
+            addAction(favorites, user.id, artist, addWeight(user.id, artist, artistNet, 'fav_weight'))
 
-	# get list of users who have commented on this user's track
-		commenters = get_results(client, '/tracks/' + str(track) + '/comments')
-		print "Adding commenters for %s" % (id2username(artist))
-		for comment in commenters:
-			addAction(comments, comment.user['id'], artist, addWeight(comment.user['id'], artist, artistNet, 'com_weight'))
+    # get list of users who have commented on this user's track
+        commenters = get_results(client, '/tracks/' + str(track) + '/comments')
+        print "Adding commenters for %s" % (id2username(artist))
+        for comment in commenters:
+            addAction(comments, comment.user['id'], artist, addWeight(comment.user['id'], artist, artistNet, 'com_weight'))
 

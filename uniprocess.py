@@ -34,44 +34,44 @@ unavailable_profiles = []
 
 for t in range(depth):
 
-	print "Iteration " + str(t)
+    print "Iteration " + str(t)
 
-	profiles_to_enqueue = list(set(profiles_to_enqueue))
+    profiles_to_enqueue = list(set(profiles_to_enqueue))
 
-	for profile in profiles_to_enqueue:
-		username = scac.id2username(profile)
-		if username:
-			print "\t", "Enqueueing: %s (%s)" % (username, profile)
+    for profile in profiles_to_enqueue:
+        username = scac.id2username(profile)
+        if username:
+            print "\t", "Enqueueing: %s (%s)" % (username, profile)
                         profileGraph.add_node(profile)
 
-			newFollowings = scac.getFollowings(profile)
-			print "New followings: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newFollowings])
-			scac.addFollowings(profile, newFollowings, profileGraph)
-			profiles_to_enqueue.extend(newFollowings)
+            newFollowings = scac.getFollowings(profile)
+            print "New followings: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newFollowings])
+            scac.addFollowings(profile, newFollowings, profileGraph)
+            profiles_to_enqueue.extend(newFollowings)
 
-			newFollowers = scac.getFollowers(profile)
-			print "New followers: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newFollowers])
-			scac.addFollowers(profile, newFollowers, profileGraph)
-			profiles_to_enqueue.extend(newFollowers)
+            newFollowers = scac.getFollowers(profile)
+            print "New followers: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newFollowers])
+            scac.addFollowers(profile, newFollowers, profileGraph)
+            profiles_to_enqueue.extend(newFollowers)
 
-			newFavorites = scac.getFavorites(profile)
-			print "New Favorites: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newFavorites])
-			scac.addFavorites(profile, newFavorites, profileGraph)
-			profiles_to_enqueue.extend(newFavorites)
+            newFavorites = scac.getFavorites(profile)
+            print "New Favorites: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newFavorites])
+            scac.addFavorites(profile, newFavorites, profileGraph)
+            profiles_to_enqueue.extend(newFavorites)
 
-			newComments = scac.getComments(profile)
-			print "New Comments: " + ", ".join([scac.id2username(comment, 'comments') if isinstance(scac.id2username(comment, 'comments'), str) else str(comment) for comment in newComments])
-			scac.addComments(profile, newComments, profileGraph)
-			profiles_to_enqueue.extend(newComments)
+            newComments = scac.getComments(profile)
+            print "New Comments: " + ", ".join([scac.id2username(comment, 'comments') if isinstance(scac.id2username(comment, 'comments'), str) else str(comment) for comment in newComments])
+            scac.addComments(profile, newComments, profileGraph)
+            profiles_to_enqueue.extend(newComments)
 
-			newTracks = scac.getTracks(profile)
-			print "New Tracks: " + ", ".join([scac.id2username(track, 'tracks') if isinstance(scac.id2username(track, 'tracks'), str) else str(track) for track in newTracks])
-			scac.addTracks(profile, newTracks, profileGraph)
-			profiles_to_enqueue.extend(newTracks)
+            newTracks = scac.getTracks(profile)
+            print "New Tracks: " + ", ".join([scac.id2username(track, 'tracks') if isinstance(scac.id2username(track, 'tracks'), str) else str(track) for track in newTracks])
+            scac.addTracks(profile, newTracks, profileGraph)
+            profiles_to_enqueue.extend(newTracks)
 
-		else:
-			print "\t", "Artist ID %s is not query-able" % profile
-			unavailable_profiles.append(profile)
+        else:
+            print "\t", "Artist ID %s is not query-able" % profile
+            unavailable_profiles.append(profile)
 
 print "The profile graph currently contains " + str(len(profileGraph.nodes())) + " profiles."
 
@@ -89,7 +89,7 @@ computePR(profileGraph, 0.85, iterations)
 prList = []
 
 for profile in profileGraph.nodes():
-	prList.append((profile, profileGraph.node[profile]['currPR']))
+    prList.append((profile, profileGraph.node[profile]['currPR']))
 
 prList.sort(key = lambda tup: tup[1]) # Sort the list in place
 
