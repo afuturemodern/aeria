@@ -25,13 +25,13 @@ search = client.get('/users/', q = raw_name)[0]
 tasks = mp.Queue()
 results = mp.Queue()
 
-print "Artist interpreted as: %s" % search.username
+print "Artist interpreted as: %s" % scac.getUsername(search)
 # need to compute all neighbors in given graph selection before we can compute the
 # pr of each node.
 print "="*20
 
 # initialize the task queue
-artists_to_enqueue = [search.id]
+artists_to_enqueue = [search]
 
 depth = 4
 i = 0
@@ -54,13 +54,12 @@ for t in range(depth):
     artists_to_enqueue = list(set(artists_to_enqueue))
 
     for artist in artists_to_enqueue:
-        username = scac.id2username(artist)
-        if username:
-            print "\t", "Enqueueing: %s (%s)" % (username, artist)
-            artistGraph.add_node(artist)
+        try:
+            print "\t", "Enqueueing: %s (%s)" % (scac.getUsername(artist), scac.getUserid(artist))
+            artistGraph.add_node(scac.getUserid(artist))
             num_jobs += bookTasks(tasks, artist)
-        else:
-            print "\t", "Artist ID %s is not query-able" % artist
+        except:
+            print "\t", "Item is problematic?", artist
             unavailable_artists.append(artist)
 
     print "\t", "--%d jobs enqueued" % num_jobs
@@ -72,21 +71,22 @@ for t in range(depth):
         tasks.put(None)
 
     while num_jobs:
-        artist, action, newArtists = results.get()
-        #print artist, action, newArtists, num_jobs
-        if newArtists:
+        artist, action, newArtist = results.get()
+        #print artist, action, newArtist, num_jobs
+        if newArtist is not None:
             actions = {"followings": scac.addFollowings,
                         "followers": scac.addFollowers,
                         "favorites": scac.addFavorites,
                         "comments": scac.addComments,
                         "tracks": scac.addTracks}
             # this is most likely a useless check as artist is already in the graph from above
-            if artistGraph.__contains__(artist):
-                # eg: addFollowings(artist, newArtists)
-                actions[action](artist, newArtists, artistGraph)
-                artists_to_enqueue.extend(newArtists)
-        num_jobs -= 1
-
+            if artistGraph.__contains__(scac.getUserid(artist)):
+                # eg: addFollowings(artist, newArtist)
+                actions[action](artist, [newArtist], artistGraph)
+                artists_to_enqueue.append(newArtist)
+        else:
+            # poison pill to finished that given job
+            num_jobs -= 1
     print "\t", "--Finished all jobs!"
 
     # if we reach here, we've finished processing all artist tasks

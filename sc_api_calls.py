@@ -4,11 +4,20 @@ import networkx as nx
 from py2neo import Graph
 from requests.exceptions import ConnectionError, HTTPError
 from utils import get_results, handle_http_errors
+from functools import partial
 
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
 id2username_cache = {}
 artistGraph = Graph()
+
+def getUserAttr(resource, attr):
+    if hasattr(resource, 'user'): return resource.user[attr]
+    if hasattr(resource, attr): return getattr(resource, attr)
+    return None
+
+getUsername = partial(getUserAttr, attr='username')
+getUserid = partial(getUserAttr, attr='id')
 
 @handle_http_errors
 def id2username(profile, kind='users'):
@@ -48,12 +57,12 @@ def getFavorites(profile):
 @handle_http_errors
 def getComments(profile):
     comments = get_results(client, '/users/{0:s}/comments/'.format(str(profile)))
-    return [comment.user['id'] for comment in comments]
+    return comments
 
 @handle_http_errors
 def getTracks(profile):
     tracks = get_results(client, '/users/{0:s}/tracks/'.format(str(profile)))
-    return [track.id for track in tracks]
+    return tracks
 
 def getWeight(profile, neighbor, artistNet, attr):
         if artistNet.has_edge(profile, neighbor, key=attr):
@@ -69,27 +78,28 @@ def addWeight(profile, neighbor, artistNet, attr):
 
 def addAction(action, profile, neighbor, weight):
     query = '(profile {username: {username} } ) - [interaction : {action} { weight: [ {weight} ] } ] -> (neighbor {username: {neighbor} } )'
+    return True
     artistGraph.cypher.execute(query, {'username': id2username(profile), 'action': action, 'neighbor': id2username(neighbor), 'weight': weight})
 
 def addFollowings(artist, followings, artistNet):
     print "Adding followings for %s" % (id2username(artist))
     for user in followings:
-        addAction(follows, artist, user, addWeight(artist, user, artistNet, 'fol_weight'))
+        addAction('follows', artist, user, addWeight(artist, user, artistNet, 'fol_weight'))
 
 def addFollowers(artist, followers, artistNet):
     print "Adding followers for %s" % (id2username(artist))
     for user in followers:
-        addAction(follows, user, artist, addWeight(user, artist, artistNet, 'fol_weight'))
+        addAction('follows', user, artist, addWeight(user, artist, artistNet, 'fol_weight'))
 
 def addFavorites(artist, favorites, artistNet):
     print "Adding favorites for %s" % (id2username(artist))
     for user in favorites:
-        addAction(favorites, artist, user, addWeight(artist, user, artistNet, 'fav_weight'))
+        addAction('favorites', artist, user, addWeight(artist, user, artistNet, 'fav_weight'))
 
 def addComments(artist, comments, artistNet):
     print "Adding comments for %s" % (id2username(artist))
     for user in comments:
-        addAction(comments, artist, user, addWeight(artist, user, artistNet, 'com_weight'))
+        addAction('comments', artist, user, addWeight(artist, user, artistNet, 'com_weight'))
 
 def addTracks(artist, tracks, artistNet):
     for track in tracks:
@@ -97,10 +107,10 @@ def addTracks(artist, tracks, artistNet):
         favoriters = get_results(client, '/tracks/' + str(track) + '/favoriters')
         print "Adding favoriters for %s" % (id2username(artist))
         for user in favoriters:
-            addAction(favorites, user.id, artist, addWeight(user.id, artist, artistNet, 'fav_weight'))
+            addAction('favorites', user.id, artist, addWeight(user.id, artist, artistNet, 'fav_weight'))
 
     # get list of users who have commented on this user's track
         commenters = get_results(client, '/tracks/' + str(track) + '/comments')
         print "Adding commenters for %s" % (id2username(artist))
         for comment in commenters:
-            addAction(comments, comment.user['id'], artist, addWeight(comment.user['id'], artist, artistNet, 'com_weight'))
+            addAction('comments', comment.user['id'], artist, addWeight(comment.user['id'], artist, artistNet, 'com_weight'))

@@ -11,12 +11,14 @@ class Consumer(mp.Process):
         proc_name = self.name
         while True:
             next_task = self.task_queue.get()
-            if next_task is None:
-                                # print "%s is dying!" % proc_name
-                # Poison pill means we should exit
-                break
-            answer = next_task()
-            self.result_queue.put([next_task.artist, next_task.action, answer])
+            # Poison pill means we should exit
+            if next_task is None: break
+            answers = next_task()
+            # dequeue one at a time
+            for answer in answers:
+                self.result_queue.put([next_task.artist, next_task.action, answer])
+            # poison pill to indiciate we finished this task
+            self.result_queue.put([next_task.artist, next_task.action, None])
         return
 
 class Task(object):
@@ -29,8 +31,18 @@ class Task(object):
                     "favorites": scac.getFavorites,
                     "comments": scac.getComments,
                     "tracks": scac.getTracks}
-        initialResults = actions[self.action](self.artist)
-        results = list(set([artist for artist in initialResults if scac.id2username(artist)]))
+        # initialResults = actions[self.action](self.artist)
+        initialResults = None
+        return actions[self.action](scac.getUserid(self.artist))
+        results = []
+        for artist in initialResults:
+            userid = None
+            if hasattr(artist, 'id'): userid = artist.id
+            elif hasattr(artist, 'user'): userid = artist.user['id']
+            else: print "\t", artist
+            results.append(userid)
+        results = list(set(results))
+        results = [result for result in results if result]
         return results
     def __str__(self):
         return 'Get %s: %s' % (self.action, self.artist)
