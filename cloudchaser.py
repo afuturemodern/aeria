@@ -42,6 +42,26 @@ num_consumers = mp.cpu_count()
 # list of artists we could not query
 unavailable_artists = []
 
+# let's make sure we handle accidental exits and clean up stuff
+import signal
+import atexit
+def exit_handler():
+    # kill all child processes we've spawned
+    import psutil, os
+    def kill_proc_tree(pid, including_parent=True):
+        parent = psutil.Process(pid)
+        children = parent.children(recursive=True)
+        for child in children:
+            child.kill()
+        psutil.wait_procs(children, timeout=5)
+        if including_parent:
+            parent.kill()
+            parent.wait(5)
+    kill_proc_tree(os.getpid())
+
+atexit.register(exit_handler)
+signal.signal(signal.SIGINT, lambda signal, frame: exit_handler())
+
 for t in range(depth):
 
     print "Iteration " + str(t)
