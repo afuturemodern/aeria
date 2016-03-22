@@ -1,7 +1,7 @@
 import sys
 import soundcloud
 import networkx as nx
-from py2neo import Graph
+from py2neo import authenticate, Graph
 from py2neo.packages.httpstream.http import SocketError
 from requests.exceptions import ConnectionError, HTTPError
 from utils import get_results, handle_http_errors
@@ -10,7 +10,10 @@ from functools import partial
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
 id2username_cache = {}
-artistGraph = Graph()
+
+# need to navigate and set the password to "pass" for first time
+authenticate("localhost:7474", "neo4j", "pass")
+artistGraph = Graph("http://localhost:7474/db/data")
 
 def getUserAttr(resource, attr):
     if hasattr(resource, 'user'): return resource.user[attr]
