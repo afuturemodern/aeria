@@ -81,9 +81,10 @@ def addWeight(action, profile, neighbor, artistNet, attr):
     return new_weight
 
 def addAction(action, profile, neighbor, weight):
-    query = '(profile {username: {username} } ) - [interaction : {action} { weight: [ {weight} ] } ] -> (neighbor {username: {neighbor} } )'
+    # relationship types cannot be dynamic (parameterized)
+    query = 'CREATE (profile:Person {profile}) - [interaction:%s {weight: [{weight}]}] -> (neighbor:Person {neighbor})' % action.upper()
     try:
-        artistGraph.cypher.execute(query, {'username': getUsername(profile), 'action': action, 'neighbor': getUsername(neighbor), 'weight': weight})
+        artistGraph.cypher.execute(query, {'profile': {'id': getUserid(profile), 'username': getUsername(profile)}, 'weight': weight, 'neighbor': {'id': getUserid(neighbor), 'username': getUsername(neighbor)}})
     except SocketError:
         print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     return True
