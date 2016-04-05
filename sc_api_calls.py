@@ -87,7 +87,7 @@ def getUserInfo(profile):
             'track_count',
             'followers_count',
             'followings_count']
-    return {i: getUserattr(profile, i) for i in info}
+    return {i: getUserAttr(profile, i) for i in info}
 
 def addWeight(action, profile, neighbor, artistNet, attr):
     new_weight = getWeight(profile, neighbor, artistNet, attr)
@@ -97,9 +97,13 @@ def addWeight(action, profile, neighbor, artistNet, attr):
 
 def addAction(action, profile, neighbor, weight):
     # relationship types cannot be dynamic (parameterized)
-    query = 'CREATE (profile:Person {profile}) - [interaction:%s {weight: [{weight}]}] -> (neighbor:Person {neighbor})' % action.upper()
+    query = ('MERGE (profile:Person {id: {profile}.id}) ON CREATE SET profile={profile} '
+             'MERGE (neighbor:Person {id: {neighbor}.id}) ON CREATE SET neighbor={neighbor} '
+             'MERGE (profile)-[interaction:%s {id: {interaction}.id}]->(neighbor) ON CREATE SET interaction={interaction}' % action.upper())
     try:
-        artistGraph.cypher.execute(query, {'profile': getUserInfo(profile), 'weight': weight, 'neighbor': getUserInfo(neighbor)})
+        artistGraph.cypher.execute(query, {'profile': getUserInfo(profile),
+                                           'interaction': {'id': 0, 'weight': weight},
+                                           'neighbor': getUserInfo(neighbor)})
     except SocketError:
         print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     return True
