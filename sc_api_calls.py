@@ -42,6 +42,8 @@ def id2username(profile, kind='users'):
     id2username_cache[profile] = username
     return username
 
+def getRelationships(profile, client, url): return get_results(client, url)
+
 @handle_http_errors
 def getFollowings(profile):
     # get list of users who the artist is following.
@@ -74,6 +76,19 @@ def getWeight(profile, neighbor, artistNet, attr):
         else:
           return 1
 
+def getUserInfo(profile):
+    info = ['id',
+            'permalink',
+            'username',
+            'avatar_url',
+            'country',
+            'city',
+            'website',
+            'track_count',
+            'followers_count',
+            'followings_count']
+    return {i: getUserattr(profile, i) for i in info}
+
 def addWeight(action, profile, neighbor, artistNet, attr):
     new_weight = getWeight(profile, neighbor, artistNet, attr)
     artistNet.add_edge(profile, neighbor, key=attr, weight=new_weight)
@@ -84,7 +99,7 @@ def addAction(action, profile, neighbor, weight):
     # relationship types cannot be dynamic (parameterized)
     query = 'CREATE (profile:Person {profile}) - [interaction:%s {weight: [{weight}]}] -> (neighbor:Person {neighbor})' % action.upper()
     try:
-        artistGraph.cypher.execute(query, {'profile': {'id': getUserid(profile), 'username': getUsername(profile)}, 'weight': weight, 'neighbor': {'id': getUserid(neighbor), 'username': getUsername(neighbor)}})
+        artistGraph.cypher.execute(query, {'profile': getUserInfo(profile), 'weight': weight, 'neighbor': getUserInfo(neighbor)})
     except SocketError:
         print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     return True
