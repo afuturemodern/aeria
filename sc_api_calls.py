@@ -13,7 +13,7 @@ id2username_cache = {}
 
 # need to navigate and set the password to "pass" for first time
 authenticate("localhost:7474", "neo4j", "pass")
-artistGraph = Graph("http://localhost:7474/db/data")
+userGraph = Graph("http://localhost:7474/db/data")
 
 def getUserAttr(resource, attr):
     if hasattr(resource, 'user'): return resource.user[attr]
@@ -70,12 +70,13 @@ def getTracks(profile):
     tracks = get_results(client, '/users/{0:s}/tracks/'.format(str(profile)))
     return tracks
 
-def getWeight(profile, neighbor, artistNet, attr):
-        if artistNet.has_edge(profile, neighbor, key=attr):
-                return artistNet.get_edge_data(profile, neighbor, key=attr)['weight'] + 1
+def getWeight(profile, neighbor, profileGraph, attr):
+        if profileGraph.has_edge(profile, neighbor, key=attr):
+                return profileGraph.get_edge_data(profile, neighbor, key=attr)['weight'] + 1
         else:
           return 1
 
+<<<<<<< Updated upstream
 def getUserInfo(profile):
     info = ['id',
             'permalink',
@@ -89,9 +90,9 @@ def getUserInfo(profile):
             'followings_count']
     return {i: getUserAttr(profile, i) for i in info}
 
-def addWeight(action, profile, neighbor, artistNet, attr):
-    new_weight = getWeight(profile, neighbor, artistNet, attr)
-    artistNet.add_edge(profile, neighbor, key=attr, weight=new_weight)
+def addWeight(action, profile, neighbor, profileGraph, attr):
+    new_weight = getWeight(profile, neighbor, profileGraph, attr)
+    profileGraph.add_edge(profile, neighbor, key=attr, weight=new_weight)
     print "\t", u"{0:>15s}: {1:s} --> {2:s}".format(action, getUsername(profile), getUsername(neighbor))
     return new_weight
 
@@ -101,37 +102,37 @@ def addAction(action, profile, neighbor, weight):
              'MERGE (neighbor:Person {id: {neighbor}.id}) ON CREATE SET neighbor={neighbor} '
              'MERGE (profile)-[interaction:%s {id: {interaction}.id}]->(neighbor) ON CREATE SET interaction={interaction}' % action.upper())
     try:
-        artistGraph.cypher.execute(query, {'profile': getUserInfo(profile),
+        userGraph.cypher.execute(query, {'profile': getUserInfo(profile),
                                            'interaction': {'id': 0, 'weight': weight},
                                            'neighbor': getUserInfo(neighbor)})
     except SocketError:
         print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     return True
 
-def addFollowings(artist, followings, artistNet):
+def addFollowings(artist, followings, profileGraph):
     for user in followings:
-        addAction('follows', artist, user, addWeight('follows', artist, user, artistNet, 'fol_weight'))
+        addAction('follows', artist, user, addWeight('follows', artist, user, profileGraph, 'fol_weight'))
 
-def addFollowers(artist, followers, artistNet):
+def addFollowers(artist, followers, profileGraph):
     for user in followers:
-        addAction('follows', user, artist, addWeight('follows', user, artist, artistNet, 'fol_weight'))
+        addAction('follows', user, artist, addWeight('follows', user, artist, profileGraph, 'fol_weight'))
 
-def addFavorites(artist, favorites, artistNet):
+def addFavorites(artist, favorites, profileGraph):
     for user in favorites:
-        addAction('favorites', artist, user, addWeight('favorites', artist, user, artistNet, 'fav_weight'))
+        addAction('favorites', artist, user, addWeight('favorites', artist, user, profileGraph, 'fav_weight'))
 
-def addComments(artist, comments, artistNet):
+def addComments(artist, comments, profileGraph):
     for user in comments:
-        addAction('comments', artist, user, addWeight('comments', artist, user, artistNet, 'com_weight'))
+        addAction('comments', artist, user, addWeight('comments', artist, user, profileGraph, 'com_weight'))
 
-def addTracks(artist, tracks, artistNet):
+def addTracks(artist, tracks, profileGraph):
     for track in tracks:
     # get list of users who have favorited this user's track
         favoriters = get_results(client, '/tracks/' + str(track.id) + '/favoriters')
         for user in favoriters:
-            addAction('favorites', user, artist, addWeight('favorites', user, artist, artistNet, 'fav_weight'))
+            addAction('favorites', user, artist, addWeight('favorites', user, artist, profileGraph, 'fav_weight'))
 
     # get list of users who have commented on this user's track
         commenters = get_results(client, '/tracks/' + str(track.id) + '/comments')
-        for comment in commenters:
-            addAction('comments', comment, artist, addWeight('favorites', comment, artist, artistNet, 'com_weight'))
+        for user in commenters:
+            addAction('comments', user, artist, addWeight('comments', comment, artist, profileGraph, 'com_weight'))

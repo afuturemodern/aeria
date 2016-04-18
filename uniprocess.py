@@ -42,7 +42,7 @@ for t in range(depth):
         username = scac.id2username(profile)
         if username:
             print "\t", "Enqueueing: %s (%s)" % (username, profile)
-                        profileGraph.add_node(profile)
+            profileGraph.add_node(profile)
 
             newFollowings = scac.getFollowings(profile)
             print "New followings: " + ", ".join([scac.id2username(user) if isinstance(scac.id2username(user), str) else str(user) for user in newFollowings])

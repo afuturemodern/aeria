@@ -11,7 +11,7 @@ from cc_mp_classes import Consumer, Task, bookTasks
 
 # A global artist graph used to iterate through the various algorithms.
 # Each node is artist id, with edges weighted by activity between then.
-artistGraph = nx.MultiDiGraph()
+profileGraph = nx.MultiDiGraph()
 
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
@@ -76,7 +76,7 @@ for t in range(depth):
     for artist in artists_to_enqueue:
         try:
             print "\t", "Enqueueing: %s (%s)" % (scac.getUsername(artist), scac.getUserid(artist))
-            artistGraph.add_node(scac.getUserid(artist))
+            profileGraph.add_node(scac.getUserid(artist))
             num_jobs += bookTasks(tasks, artist)
         except:
             print "\t", "Item is problematic?", artist
@@ -100,9 +100,9 @@ for t in range(depth):
                         "comments": scac.addComments,
                         "tracks": scac.addTracks}
             # this is most likely a useless check as artist is already in the graph from above
-            if artistGraph.__contains__(scac.getUserid(artist)):
+            if profileGraph.__contains__(scac.getUserid(artist)):
                 # eg: addFollowings(artist, newArtist)
-                actions[action](artist, [newArtist], artistGraph)
+                actions[action](artist, [newArtist], profileGraph)
                 artists_to_enqueue.append(newArtist)
         else:
             # poison pill to finished that given job
@@ -111,17 +111,17 @@ for t in range(depth):
 
     # if we reach here, we've finished processing all artist tasks
 
-print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
+print "The artist graph currently contains " + str(len(profileGraph)) + " artists."
 
-print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
+print "The artist graph currently contains " + str(nx.number_strongly_connected_components(profileGraph)) + " strongly connected components."
 
-my_component = artistGraph
+my_component = profileGraph
 
-for component in nx.strongly_connected_component_subgraphs(artistGraph):
+for component in nx.strongly_connected_component_subgraphs(profileGraph):
     if search.id in component:
         my_component = component
 
-print "This artist's clique currently contains " + str(len(artistGraph)) + " artists."
+print "This artist's clique currently contains " + str(len(profileGraph)) + " artists."
 
 # Go through the graph and compute each PR until it converges.
 iterations = 10
