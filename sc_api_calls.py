@@ -70,13 +70,6 @@ def getTracks(profile):
     tracks = get_results(client, '/users/{0:s}/tracks/'.format(str(profile)))
     return tracks
 
-def getWeight(profile, neighbor, profileGraph, attr):
-        if profileGraph.has_edge(profile, neighbor, key=attr):
-                return profileGraph.get_edge_data(profile, neighbor, key=attr)['weight'] + 1
-        else:
-          return 1
-
-<<<<<<< Updated upstream
 def getUserInfo(profile):
     info = ['id',
             'permalink',
@@ -87,20 +80,44 @@ def getUserInfo(profile):
             'website',
             'track_count',
             'followers_count',
-            'followings_count']
+            'followings_count'
+            ]
     return {i: getUserAttr(profile, i) for i in info}
 
-def addWeight(action, profile, neighbor, profileGraph, attr):
-    new_weight = getWeight(profile, neighbor, profileGraph, attr)
-    profileGraph.add_edge(profile, neighbor, key=attr, weight=new_weight)
-    print "\t", u"{0:>15s}: {1:s} --> {2:s}".format(action, getUsername(profile), getUsername(neighbor))
-    return new_weight
+getTrackInfo(track):
+    info = ['id',
+            'user_id',
+            'created_at',
+            'streamabale',
+            'downloadable',
+            'playback_count',
+            'download_count',
+            'favoritings_count',
+            'comment_count'
+            ]
+    return {i: getUserAttr(track, i) for i in info}
+
+#def getWeight(profile, neighbor, profileGraph, attr):
+#        if profileGraph.has_edge(profile, neighbor, key=attr):
+#                return profileGraph.get_edge_data(profile, neighbor, key=attr)['weight'] + 1
+#        else:
+#          return 1
+
+#def addWeight(action, profile, neighbor, profileGraph, attr):
+#    new_weight = getWeight(profile, neighbor, profileGraph, attr)
+#    profileGraph.add_edge(profile, neighbor, key=attr, weight=new_weight)
+#    print "\t", u"{0:>15s}: {1:s} --> {2:s}".format(action, getUsername(profile), getUsername(neighbor))
+#    return new_weight
 
 def addAction(action, profile, neighbor, weight):
     # relationship types cannot be dynamic (parameterized)
-    query = ('MERGE (profile:Person {id: {profile}.id}) ON CREATE SET profile={profile} '
-             'MERGE (neighbor:Person {id: {neighbor}.id}) ON CREATE SET neighbor={neighbor} '
-             'MERGE (profile)-[interaction:%s {id: {interaction}.id}]->(neighbor) ON CREATE SET interaction={interaction}' % action.upper())
+    query = ('MERGE (profile:soundcloud  {id: {profile}.id}) 
+            ON CREATE SET profile={profile} '
+             'MERGE (neighbor:soundcloud {id: {neighbor}.id}) 
+            ON CREATE SET neighbor={neighbor} '
+             'MERGE (profile)-[r:%s {id: {interaction}.id}]->(neighbor) 
+            ON CREATE SET interaction={interaction}' 
+            % action.upper())
     try:
         userGraph.cypher.execute(query, {'profile': getUserInfo(profile),
                                            'interaction': {'id': 0, 'weight': weight},
@@ -109,30 +126,100 @@ def addAction(action, profile, neighbor, weight):
         print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     return True
 
-def addFollowings(artist, followings, profileGraph):
-    for user in followings:
-        addAction('follows', artist, user, addWeight('follows', artist, user, profileGraph, 'fol_weight'))
+def addPair(profile, neighbor):
+    query = ('MERGE (profile:soundcloud {id: {profile}.id})
+            ON CREATE SET profile={profile} '
+            'MERGE (neighbor:soundcloud {id: {neighbor}.id})
+            ON CREATE SET neighbor={neighbor} ')
+    try:
+         artistGraph.cypher.execute(query, {'profile': getUserInfo(profile),'neighbor': getUserInfo(neighbor)})
+    except:
+        print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
+    return True
 
-def addFollowers(artist, followers, profileGraph):
-    for user in followers:
-        addAction('follows', user, artist, addWeight('follows', user, artist, profileGraph, 'fol_weight'))
+def addFollow(profile, neighbor):
+    query = ('MERGE (profile:soundcloud {id: {profile}.id})
+            ON CREATE SET profile={profile} '
+            'MERGE (neighbor:soundcloud {id: {neighbor}.id})
+            ON CREATE SET neighbor={neighbor} '
+            'MERGE (profile)-[r:follows]->(neighbor)')
+    try:
+        artistGraph.cypher.execute(query, {'profile': getUserInfo(profile),
+                                        'neighbor': getUserInfo(neighbor)})
+    except SocketError:
+        print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
+    return True
 
-def addFavorites(artist, favorites, profileGraph):
-    for user in favorites:
-        addAction('favorites', artist, user, addWeight('favorites', artist, user, profileGraph, 'fav_weight'))
 
-def addComments(artist, comments, profileGraph):
-    for user in comments:
-        addAction('comments', artist, user, addWeight('comments', artist, user, profileGraph, 'com_weight'))
+def addFav(profile, neighbor, track):
+    query = ('MERGE (profile:soundcloud {id: {profile}.id})
+            ON CREATE SET profile={profile} '
+            'MERGE (neighbor:soundcloud {id: {neighbor}.user_id})
+            ON CREATE SET neighbor={neighbor} '
+            'MERGE (profile)-[r:favorites]->(neighbor) ON CREATE SET r.track_ids  = [{track}]
+            ON MATCH SET r.track_ids  =
+            CASE WHEN {track} NOT IN r.track_ids
+                THEN r.track_ids + [{track}]
+                ELSE r.track_ids
+            END')
+    try:
+        artistGraph.cypher.execute(query, 'profile': getUserInfo(profile),
+                                        'track': track,
+                                        'neighbor': neighbor)
+    except SocketError:
+        print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
+    return True
+    #Use SET to update properties
 
-def addTracks(artist, tracks, profileGraph):
+def addComment(profile, neighbor, comment):
+    query = ('MERGE (profile:soundcloud {id: {profile}.id})
+            ON CREATE SET profile={profile} '
+            'MERGE (neighbor:soundcloud {id: {neighbor}.user_id})
+            ON CREATE SET neighbor={neighbor} '
+            'MERGE (profile)-[r:comment]->(neighbor) ON CREATE SET r.comment_ids = [{comment}]
+            ON MATCH SET r.coment_ids =
+            CASE WHEN {comment} NOT IN r.comment_ids
+                THEN r.comment_ids + [{comment}]
+                ELSE r.comment_ids
+            END')
+    try:
+        artistGraph.cypher.execute(query, 'profile': getUserInfo(profile),
+                                        'track': track,
+                                        'neighbor': neighbor)
+    except:
+        print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"    
+    return True
+
+def addFollowings(profile, followings) #, profileGraph):
+    for follow in followings:
+        addFollow(profile, follow)
+#       addAction('follows', artist, user, addWeight('follows', artist, user, profileGraph, 'fol_weight'))
+
+def addFollowers(profile, followers) #, profileGraph):
+    for follow in followers:
+        addFollow(follow, profile)
+#       addAction('follows', user, artist, addWeight('follows', user, artist, profileGraph, 'fol_weight'))
+
+def addFavorites(profile, favorites) #, profileGraph):
+    for favorite in favorites:
+        addFav(profile, favorite, favorite.id)
+#       addAction('favorites', artist, user, addWeight('favorites', artist, user, profileGraph, 'fav_weight'))
+
+def addComments(artist, comments) #, profileGraph):
+    for comment in comments:
+        addComment(artist, comment, comment.id)
+#       addAction('comments', artist, user, addWeight('comments', artist, user, profileGraph, 'com_weight'))
+
+def addTracks(profile, tracks) #, profileGraph):
     for track in tracks:
     # get list of users who have favorited this user's track
         favoriters = get_results(client, '/tracks/' + str(track.id) + '/favoriters')
-        for user in favoriters:
-            addAction('favorites', user, artist, addWeight('favorites', user, artist, profileGraph, 'fav_weight'))
+        for favoriter in favoriters:
+            addFav(favoriter.user, profile, track.id)
+#           addAction('favorites', user, artist, addWeight('favorites', user, artist, profileGraph, 'fav_weight'))
 
     # get list of users who have commented on this user's track
         commenters = get_results(client, '/tracks/' + str(track.id) + '/comments')
-        for user in commenters:
-            addAction('comments', user, artist, addWeight('comments', comment, artist, profileGraph, 'com_weight'))
+        for commenter in commenters:
+            addComment(commenter.user, profile, commenter.id)
+#           addAction('comments', user, artist, addWeight('comments', comment, artist, profileGraph, 'com_weight'))
