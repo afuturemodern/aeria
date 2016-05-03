@@ -113,33 +113,33 @@ for t in range(depth):
     # if we reach here, we've finished processing all artist tasks
 
 #print "The artist graph currently contains " + str(len(profileGraph)) + " artists."
-
+#
 #print "The artist graph currently contains " + str(nx.number_strongly_connected_components(profileGraph)) + " strongly connected components."
-
+#
 #my_component = profileGraph
-
+#
 #for component in nx.strongly_connected_component_subgraphs(profileGraph):
 #    if search.id in component:
 #        my_component = component
-
+#
 #print "This artist's clique currently contains " + str(len(profileGraph)) + " artists."
-
+#
 # Go through the graph and compute each PR until it converges.
 #iterations = 10
 #print "Computing PageRank on your searched artist..."
 #computePR(my_component , 0.85, iterations)
-
+#
 #prList = []
-
+#
 #for artist in my_component.nodes():
 #    prList.append((artist, my_component.node[artist]['currPR']))
-
+#
 #prList.sort(key = lambda tup: tup[1]) # Sort the list in place
-
+#
 #prList.reverse() # order by descending PR
-
+#
 #print ("Here are some artists similar to " + str(search.username) )
-
+#
 #for item in prList[0:10]:
 #    artist = scac.id2username(item[0])
 #    print artist, item[1]
