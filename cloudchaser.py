@@ -76,7 +76,8 @@ for t in range(depth):
     for artist in artists_to_enqueue:
         try:
             print "\t", "Enqueueing: %s (%s)" % (scac.getUsername(artist), scac.getUserid(artist))
-            profileGraph.add_node(scac.getUserid(artist))
+            scac.addNode(artist)
+#           profileGraph.add_node(scac.getUserid(artist))
             num_jobs += bookTasks(tasks, artist)
         except:
             print "\t", "Item is problematic?", artist
@@ -100,9 +101,9 @@ for t in range(depth):
                         "comments": scac.addComments,
                         "tracks": scac.addTracks}
             # this is most likely a useless check as artist is already in the graph from above
-            if profileGraph.__contains__(scac.getUserid(artist)):
+            #if profileGraph.__contains__(scac.getUserid(artist)):
                 # eg: addFollowings(artist, newArtist)
-                actions[action](artist, [newArtist], profileGraph)
+                actions[action](artist, [newArtist]) #, profileGraph)
                 artists_to_enqueue.append(newArtist)
         else:
             # poison pill to finished that given job
@@ -111,34 +112,34 @@ for t in range(depth):
 
     # if we reach here, we've finished processing all artist tasks
 
-print "The artist graph currently contains " + str(len(profileGraph)) + " artists."
+#print "The artist graph currently contains " + str(len(profileGraph)) + " artists."
 
-print "The artist graph currently contains " + str(nx.number_strongly_connected_components(profileGraph)) + " strongly connected components."
+#print "The artist graph currently contains " + str(nx.number_strongly_connected_components(profileGraph)) + " strongly connected components."
 
-my_component = profileGraph
+#my_component = profileGraph
 
-for component in nx.strongly_connected_component_subgraphs(profileGraph):
-    if search.id in component:
-        my_component = component
+#for component in nx.strongly_connected_component_subgraphs(profileGraph):
+#    if search.id in component:
+#        my_component = component
 
-print "This artist's clique currently contains " + str(len(profileGraph)) + " artists."
+#print "This artist's clique currently contains " + str(len(profileGraph)) + " artists."
 
 # Go through the graph and compute each PR until it converges.
-iterations = 10
-print "Computing PageRank on your searched artist..."
-computePR(my_component , 0.85, iterations)
+#iterations = 10
+#print "Computing PageRank on your searched artist..."
+#computePR(my_component , 0.85, iterations)
 
-prList = []
+#prList = []
 
-for artist in my_component.nodes():
-    prList.append((artist, my_component.node[artist]['currPR']))
+#for artist in my_component.nodes():
+#    prList.append((artist, my_component.node[artist]['currPR']))
 
-prList.sort(key = lambda tup: tup[1]) # Sort the list in place
+#prList.sort(key = lambda tup: tup[1]) # Sort the list in place
 
-prList.reverse() # order by descending PR
+#prList.reverse() # order by descending PR
 
-print ("Here are some artists similar to " + str(search.username) )
+#print ("Here are some artists similar to " + str(search.username) )
 
-for item in prList[0:10]:
-    artist = scac.id2username(item[0])
-    print artist, item[1]
+#for item in prList[0:10]:
+#    artist = scac.id2username(item[0])
+#    print artist, item[1]

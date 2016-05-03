@@ -126,13 +126,24 @@ def addAction(action, profile, neighbor, weight):
         print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     return True
 
+def addNode(profile):
+    query = ('MERGE (profile:souncloud {id: {profile}.id})
+            ON CREATE SET profile {profile} ')
+    try:
+        artistGraph.cypher.execute(query, {'profile': getUserInfo(profile)})
+    except SocketError:
+        print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
+    return True
+
+
 def addPair(profile, neighbor):
     query = ('MERGE (profile:soundcloud {id: {profile}.id})
             ON CREATE SET profile={profile} '
             'MERGE (neighbor:soundcloud {id: {neighbor}.id})
             ON CREATE SET neighbor={neighbor} ')
     try:
-         artistGraph.cypher.execute(query, {'profile': getUserInfo(profile),'neighbor': getUserInfo(neighbor)})
+         userGraph.cypher.execute(query, {'profile': getUserInfo(profile),
+                                    'neighbor': getUserInfo(neighbor)})
     except:
         print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     return True
@@ -144,7 +155,7 @@ def addFollow(profile, neighbor):
             ON CREATE SET neighbor={neighbor} '
             'MERGE (profile)-[r:follows]->(neighbor)')
     try:
-        artistGraph.cypher.execute(query, {'profile': getUserInfo(profile),
+        userGraph.cypher.execute(query, {'profile': getUserInfo(profile),
                                         'neighbor': getUserInfo(neighbor)})
     except SocketError:
         print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
@@ -163,7 +174,7 @@ def addFav(profile, neighbor, track):
                 ELSE r.track_ids
             END')
     try:
-        artistGraph.cypher.execute(query, 'profile': getUserInfo(profile),
+        userGraph.cypher.execute(query, 'profile': getUserInfo(profile),
                                         'track': track,
                                         'neighbor': neighbor)
     except SocketError:
@@ -183,7 +194,7 @@ def addComment(profile, neighbor, comment):
                 ELSE r.comment_ids
             END')
     try:
-        artistGraph.cypher.execute(query, 'profile': getUserInfo(profile),
+        userGraph.cypher.execute(query, 'profile': getUserInfo(profile),
                                         'track': track,
                                         'neighbor': neighbor)
     except:
