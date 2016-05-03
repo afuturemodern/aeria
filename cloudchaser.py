@@ -11,7 +11,7 @@ from cc_mp_classes import Consumer, Task, bookTasks
 
 # A global artist graph used to iterate through the various algorithms.
 # Each node is artist id, with edges weighted by activity between then.
-profileGraph = nx.MultiDiGraph()
+#profileGraph = nx.MultiDiGraph()
 
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
