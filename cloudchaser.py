@@ -103,8 +103,8 @@ for t in range(depth):
             # this is most likely a useless check as artist is already in the graph from above
             #if profileGraph.__contains__(scac.getUserid(artist)):
                 # eg: addFollowings(artist, newArtist)
-                actions[action](artist, [newArtist]) #, profileGraph)
-                artists_to_enqueue.append(newArtist)
+            actions[action](artist, [newArtist]) #, profileGraph)
+            artists_to_enqueue.append(newArtist)
         else:
             # poison pill to finished that given job
             num_jobs -= 1
