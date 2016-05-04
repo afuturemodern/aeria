@@ -130,7 +130,7 @@ def addNode(profile):
     query = ('MERGE (profile:souncloud {id: {profile}.id}) \
             ON CREATE SET profile {profile} ')
     try:
-        artistGraph.cypher.execute(query, {'profile': getUserInfo(profile)})
+        userGraph.cypher.execute(query, {'profile': getUserInfo(profile)})
     except SocketError:
         print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     return True
