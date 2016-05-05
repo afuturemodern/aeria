@@ -12,7 +12,7 @@ client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 id2username_cache = {}
 
 # need to navigate and set the password to "pass" for first time
-authenticate("localhost:7474", "neo4j", "pass")
+authenticate("localhost:7474", "neo4j", "cloudchaser")
 userGraph = Graph("http://localhost:7474/db/data")
 
 def getUserAttr(resource, attr):
@@ -128,7 +128,7 @@ def addAction(action, profile, neighbor, weight):
 
 def addNode(profile):
     query = ('MERGE (profile:souncloud {id: {profile}.id}) \
-            ON CREATE SET profile {profile} ')
+            ON CREATE SET profile={profile} ')
     try:
         userGraph.cypher.execute(query, {'profile': getUserInfo(profile)})
     except SocketError:
