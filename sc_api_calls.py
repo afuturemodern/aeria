@@ -13,7 +13,7 @@ id2username_cache = {}
 
 # need to navigate and set the password to "pass" for first time
 authenticate("localhost:7474", "neo4j", "cloudchaser")
-userGraph = Graph("http://localhost:7474/db/data")
+userGraph = Graph()
 
 def getUserAttr(resource, attr):
     if hasattr(resource, 'user'): return resource.user[attr]
