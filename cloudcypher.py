@@ -5,13 +5,13 @@ graph = Graph("http://localhost:7474/db/data/")
 
 graph.delete_all()
 
-alice = Node("Person", name="Alice")
-bob = Node("Person", name="Bob")
-chelsea = Node("Person", name="Chelsea")
+alice = graph.merge("Person", "name", "Alice")
+bob = graph.merge("Person", "name", "Bob")
+chelsea = graph.merge("Person", "name", "Chelsea")
 
-graph.create(alice)
-graph.create(bob)
-graph.create(chelsea)
+#graph.create(alice)
+#graph.create(bob)
+#graph.create(chelsea)
 #bob, likes = graph.create({"name": "Bob"}, (alice, "likes", 0))
 #chelsea, likes = graph.create({"name": "Chelsea"}, (alice, "likes", 0))
 
