@@ -92,9 +92,9 @@ for t in range(depth):
         tasks.put(None)
 
     while num_jobs:
-        artist, action, newArtist = results.get()
-        #print artist, action, newArtist, num_jobs
-        if newArtist is not None:
+        profile, action, neighbor = results.get()
+        #print profile, action, neighbor, num_jobs
+        if neighbor is not None:
             actions = {"followings": scac.addFollowings,
                         "followers": scac.addFollowers,
                         "favorites": scac.addFavorites,
@@ -103,8 +103,8 @@ for t in range(depth):
             # this is most likely a useless check as artist is already in the graph from above
             #if profileGraph.__contains__(scac.getUserid(artist)):
                 # eg: addFollowings(artist, newArtist)
-            actions[action](artist, [newArtist]) #, profileGraph)
-            artists_to_enqueue.append(newArtist)
+            actions[action](profile, [neighbor]) #, profileGraph)
+            artists_to_enqueue.append(neighbor)
         else:
             # poison pill to finished that given job
             num_jobs -= 1
