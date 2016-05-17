@@ -109,6 +109,7 @@ def getUserFavInfo(fav):
 
 def getTrackFavInfo(fav):
     info = ['id', # as 'user_id',
+            'username',
             'last_modified'
            ]
     return {i: getUserAttr(fav, i) for i in info}
@@ -182,7 +183,6 @@ def addFollow(profile, neighbor):
         print "Neighbor not found."
     return True
 
-
 def addUserFav(profile, favorite):#, track):
     query = ('MERGE (profile:soundcloud {id: {profile}.id}) \
             ON CREATE SET profile={profile} '
@@ -209,7 +209,10 @@ def addUserFav(profile, favorite):#, track):
         #    else:
         #        userGraph.create_unique(Relationship(profile, "favorites", neighbor, track_ids = [track]))
             if profile_info['username'] and fav_info['user_id']:
-                print profile_info['username'] + " favorites " + str(fav_info['user_id'])
+                try:
+                    print profile_info['username'] + " favorites " + id2username(fav_info['user_id'])
+                except UnicodeDecodeError:
+                    print profile_info['username'] + " favorites " + str(fav_info['user_id'])
         except SocketError:
             print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     if profile is None:
@@ -245,7 +248,10 @@ def addUserComm(profile, comment):#, comment):
            # else:
            #     userGraph.create_unique(Relationship(profile, "comments", neighbor, track_ids = [track]))
             if profile_info['username'] and comm_info['user_id']:
-                print profile_info['username'] + " comments " + str(comm_info['user_id'])
+                try:
+                    print profile_info['username'] + " comments " + id2username(comm_info['user_id'])
+                except UnicodeDecodeError:
+                    print profile_info['username'] + " favorites " + str(comm_info['user_id'])
         except SocketError:
             print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     if profile is None:
@@ -257,7 +263,7 @@ def addUserComm(profile, comment):#, comment):
 def addTrackFav(favoriter, profile):#, track):
     query = ('MERGE (profile:soundcloud {id: {profile}.id}) \
             ON CREATE SET profile={profile} '
-            'MERGE (favoriter:soundcloud {id: {favoriter}.user_id}) \
+            'MERGE (favoriter:soundcloud {id: {favoriter}.id}) \
             ON CREATE SET favoriter={favoriter} '    
             'MERGE (favoriter)-[r:favorites]->(profile)')
             # Create new favorite relationship if it dne
@@ -279,12 +285,12 @@ def addTrackFav(favoriter, profile):#, track):
         #        Relationship(profile, "favorites", neighbor)['track_ids'] += [track]
         #    else:
         #        userGraph.create_unique(Relationship(profile, "favorites", neighbor, track_ids = [track]))
-            if profile_info['username'] and fav_info['id']:
-                print str(fav_info['id']) + " favorites " + profile_info['username']
+            if profile_info['username'] and fav_info['username']:
+                print fav_info['username'] + " favorites " + profile_info['username']
         except SocketError:
             print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
         except AttributeError:  
-            print "ADD failed due to semantic error."
+            print "Track favorite add failed due to semantic error."
     if favoriter is None:
         print "Favoriter not found"
     if profile is None:
@@ -318,17 +324,19 @@ def addTrackComm(commenter, profile):#, comment):
            # else:
            #    userGraph.create_unique(Relationship(profile, "comments", neighbor, track_ids = [track]))
             if profile_info['username'] and comm_info['user_id']:
-                print str(comm_info['user_id']) + " comments  " + profile_info['username']                                
+                try:
+                    print id2username(comm_info['user_id']) + " comments  " + profile_info['username']
+                except UnicodeDecodeError:
+                    print str(comm_info['user_id']) + " comments  " + profile_info['username']
         except SocketError:
             print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
         except AttributeError:  
-            print "ADD failed due to semantic error."
+            print "Track comment add failed due to semantic error."
     if commenter is None:
         print "Commenter not found"
     if profile is None:
         print "Profile not found"
     return True
-
 
 def addFollowings(profile, followings): #, profileGraph):
     for follow in followings:
