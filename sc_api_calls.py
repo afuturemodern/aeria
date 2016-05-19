@@ -213,6 +213,8 @@ def addUserFav(profile, favorite):#, track):
                     print profile_info['username'] + " favorites " + id2username(fav_info['user_id'])
                 except UnicodeDecodeError:
                     print profile_info['username'] + " favorites " + str(fav_info['user_id'])
+                except TypeError:
+                    print "User favorite not printed due to Type Error."
         except SocketError:
             print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     if profile is None:
@@ -250,7 +252,7 @@ def addUserComm(profile, comment):#, comment):
             if profile_info['username'] and comm_info['user_id']:
                 try:
                     print profile_info['username'] + " comments " + id2username(comm_info['user_id'])
-                except UnicodeDecodeError:
+                except UnicodeDecodeError or TypeError:
                     print profile_info['username'] + " favorites " + str(comm_info['user_id'])
         except SocketError:
             print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
@@ -326,7 +328,7 @@ def addTrackComm(commenter, profile):#, comment):
             if profile_info['username'] and comm_info['user_id']:
                 try:
                     print id2username(comm_info['user_id']) + " comments  " + profile_info['username']
-                except UnicodeDecodeError:
+                except UnicodeDecodeError or TypeError:
                     print str(comm_info['user_id']) + " comments  " + profile_info['username']
         except SocketError:
             print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
@@ -361,13 +363,16 @@ def addComments(profile, comments): #, profileGraph):
 def addTracks(profile, tracks): #, profileGraph):
     for track in tracks:
     # get list of users who have favorited this user's track
-        favoriters = get_results(client, '/tracks/' + str(track.id) + '/favoriters')
-        for favoriter in favoriters:
-            addTrackFav(favoriter, profile) #, track.id)
-#           addAction('favorites', user, artist, addWeight('favorites', user, artist, profileGraph, 'fav_weight'))
+        try:
+            favoriters = get_results(client, '/tracks/' + str(track.id) + '/favoriters')
+            for favoriter in favoriters:
+                addTrackFav(favoriter, profile) #, track.id)
+#               addAction('favorites', user, artist, addWeight('favorites', user, artist, profileGraph, 'fav_weight'))
 
-    # get list of users who have commented on this user's track
-        commenters = get_results(client, '/tracks/' + str(track.id) + '/comments')
-        for commenter in commenters:
-            addTrackComm(commenter, profile) #, commenter.id)
-#           addAction('comments', user, artist, addWeight('comments', comment, artist, profileGraph, 'com_weight'))
+        # get list of users who have commented on this user's track
+            commenters = get_results(client, '/tracks/' + str(track.id) + '/comments')
+            for commenter in commenters:
+                addTrackComm(commenter, profile) #, commenter.id)
+#               addAction('comments', user, artist, addWeight('comments', comment, artist, profileGraph, 'com_weight'))
+        except HTTPError:
+            print "Track not processed due to HTTP error."
