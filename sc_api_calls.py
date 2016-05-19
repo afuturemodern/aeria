@@ -214,7 +214,7 @@ def addUserFav(profile, favorite):#, track):
                 except UnicodeDecodeError:
                     print profile_info['username'] + " favorites " + str(fav_info['user_id'])
                 except TypeError:
-                    print "User favorite not printed due to Type Error."
+                    print "User's favorite not printed due to Type Error."
         except SocketError:
             print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     if profile is None:
@@ -252,8 +252,10 @@ def addUserComm(profile, comment):#, comment):
             if profile_info['username'] and comm_info['user_id']:
                 try:
                     print profile_info['username'] + " comments " + id2username(comm_info['user_id'])
-                except UnicodeDecodeError or TypeError:
+                except UnicodeDecodeError:
                     print profile_info['username'] + " favorites " + str(comm_info['user_id'])
+                except TypeError:
+                    print "User's comment not shown due to Type error."
         except SocketError:
             print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     if profile is None:
@@ -291,8 +293,6 @@ def addTrackFav(favoriter, profile):#, track):
                 print fav_info['username'] + " favorites " + profile_info['username']
         except SocketError:
             print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
-        except AttributeError:  
-            print "Track favorite add failed due to semantic error."
     if favoriter is None:
         print "Favoriter not found"
     if profile is None:
@@ -328,12 +328,12 @@ def addTrackComm(commenter, profile):#, comment):
             if profile_info['username'] and comm_info['user_id']:
                 try:
                     print id2username(comm_info['user_id']) + " comments  " + profile_info['username']
-                except UnicodeDecodeError or TypeError:
+                except UnicodeDecodeError:
                     print str(comm_info['user_id']) + " comments  " + profile_info['username']
+                except TypeError:
+                    print "Track comment not shown due to Type error."
         except SocketError:
             print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
-        except AttributeError:  
-            print "Track comment add failed due to semantic error."
     if commenter is None:
         print "Commenter not found"
     if profile is None:
