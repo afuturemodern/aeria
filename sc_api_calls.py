@@ -157,7 +157,7 @@ def addPair(profile, neighbor):
     try:
         addNode(profile)
         addNode(neighbor)
-    except:
+    except SocketError:
         print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
     return True
 
@@ -188,7 +188,8 @@ def addUserFav(profile, favorite):#, track):
             ON CREATE SET profile={profile} '
             'MERGE (favorite:soundcloud {id: {favorite}.user_id}) \
             ON CREATE SET favorite={favorite} '   
-            'MERGE (profile)-[r:favorites]->(favorite)')
+       #     'MERGE (profile)-[r:favorites]->(favorite)'
+            )
             # Create new favorite relationship if it dne
             # If so, append the new track to the relationship property
        #     'MERGE (profile)-[r:favorites]->(neighbor) ON CREATE SET r.track_ids  = [{track}] \
@@ -200,14 +201,21 @@ def addUserFav(profile, favorite):#, track):
     if profile is not None and favorite is not None:
         profile_info = getUserInfo(profile)
         fav_info = getUserFavInfo(favorite)
+        track_id = fav_info['id']
         try:
             userGraph.cypher.execute(query, {'profile': profile_info,
     #                                   'track': track,
                                         'favorite': fav_info})
-        #    if Relationship.exists(profile, "favorites", neighbor):
-        #        Relationship(profile, "favorites", neighbor)['track_ids'] += [track]
-        #    else:
-        #        userGraph.create_unique(Relationship(profile, "favorites", neighbor, track_ids = [track]))
+            prof = userGraph.find_one("soundcloud", "id", profile_info['id'])
+            print "Profile properties - "
+            print prof.properties
+            fav = userGraph.find_one("soundcloud", "id", fav_info['user_id'])
+            print "Favorite properties - "
+            print fav.properties
+            if not Relationship(prof, "favorites", fav).exists:
+                userGraph.create_unique(Relationship(prof, "favorites", fav, track_ids = [track_id]))
+            else:
+                Relationship(prof, "favorites", fav)['track_ids'] += [track_id]
             if profile_info['username'] and fav_info['user_id']:
                 try:
                     print profile_info['username'] + " favorites " + id2username(fav_info['user_id'])
@@ -229,7 +237,8 @@ def addUserComm(profile, comment):#, comment):
             ON CREATE SET profile={profile} '
             'MERGE (comment:soundcloud {id: {comment}.user_id}) \
             ON CREATE SET comment={comment} '   
-            'MERGE (profile)-[r:comments]->(comment)')
+            'MERGE (profile)-[r:comments]->(comment)'
+            )
             # Create new comment relationship if it dne
             # Append new comment to property if relationship already exists
        #     'MERGE (profile)-[r:comments]->(comment) ON CREATE SET r.comment_ids = [{comment}] \
@@ -269,7 +278,8 @@ def addTrackFav(favoriter, profile):#, track):
             ON CREATE SET profile={profile} '
             'MERGE (favoriter:soundcloud {id: {favoriter}.id}) \
             ON CREATE SET favoriter={favoriter} '    
-            'MERGE (favoriter)-[r:favorites]->(profile)')
+            'MERGE (favoriter)-[r:favorites]->(profile)'
+            )
             # Create new favorite relationship if it dne
             # If so, append the new track to the relationship property
        #     'MERGE (profile)-[r:favorites]->(neighbor) ON CREATE SET r.track_ids  = [{track}] \
@@ -305,7 +315,8 @@ def addTrackComm(commenter, profile):#, comment):
             ON CREATE SET profile={profile} '
             'MERGE (commenter:soundcloud {id: {commenter}.user_id}) \
             ON CREATE SET commenter={commenter} '   
-            'MERGE (commenter)-[r:comments]->(profile)')
+            'MERGE (commenter)-[r:comments]->(profile)'
+            )
             # Create new comment relationship if it dne
             # Append new comment to property if relationship already exists
        #     'MERGE (profile)-[r:comment]->(neighbor) ON CREATE SET r.comment_ids = [{comment}] \

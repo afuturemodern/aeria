@@ -9,6 +9,32 @@ alice = graph.merge("Person", "name", "Alice")
 bob = graph.merge("Person", "name", "Bob")
 chelsea = graph.merge("Person", "name", "Chelsea")
 
+prof = {
+    'name': 'Dennis'
+}
+
+fav = {
+    'name': 'Emma'
+}
+
+query = (
+        'MERGE (profile:soundcloud {name: {profile}.name}) \
+        ON CREATE SET profile={profile} '
+        'MERGE (favorite:soundcloud {name: {favorite}.name}) \
+        ON CREATE SET favorite={favorite} '
+        )
+
+graph.cypher.execute(query, {
+                            'profile': prof,
+                            'favorite': fav
+                            }
+                    )
+
+dennis = graph.find_one("soundcloud", "name", "Dennis")
+emma = graph.find_one("soundcloud", "name", "Emma")
+
+print dennis.properties, emma.properties
+
 #graph.create(alice)
 #graph.create(bob)
 #graph.create(chelsea)
