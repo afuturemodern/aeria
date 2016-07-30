@@ -1,17 +1,17 @@
 import sys
-import networkx as nx
-import sqlite3
+#import networkx as nx
+#import sqlite3
 
 import soundcloud
-from sc_pagerank import computePR, initializePR
-import sc_api_calls as scac
+#from sc_pagerank import computePR, initializePR
+import resources.sc_api_calls as scac
 
 import multiprocessing as mp
-from cc_mp_classes import Consumer, Task, bookTasks
+from resources.cc_mp_classes import Consumer, Task, bookTasks
 
 # A global artist graph used to iterate through the various algorithms.
 # Each node is artist id, with edges weighted by activity between then.
-#profileGraph = nx.MultiDiGraph()
+# profileGraph = nx.MultiDiGraph()
 
 client = soundcloud.Client(client_id='454aeaee30d3533d6d8f448556b50f23')
 
@@ -80,7 +80,7 @@ for t in range(depth):
 #           profileGraph.add_node(scac.getUserid(artist))
             num_jobs += bookTasks(tasks, artist)
         except:
-            print "\t", "Item is problematic?", artist
+            print "\t", "Item is problematic?"
             unavailable_artists.append(artist)
 
     print "\t", "--%d jobs enqueued" % num_jobs
