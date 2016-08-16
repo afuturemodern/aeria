@@ -1,7 +1,7 @@
 cloudchaser
 ===========
 
-Soundcloud artist recommendation tool
+Visualized social web explorer
 
 Dependencies
 ------------
@@ -14,4 +14,6 @@ Dependencies
 ```
 pip install -r requirements
 ```
+From Applications directory, run
 
+python -m neo4j.cloudchaser
