@@ -149,7 +149,7 @@ def addNode(profile):
     try:
         userGraph.cypher.execute(query, {'profile': getUserInfo(profile)})
     except SocketError:
-        print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
+        print("\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----")
     return True
 
 
@@ -158,7 +158,7 @@ def addPair(profile, neighbor):
         addNode(profile)
         addNode(neighbor)
     except SocketError:
-        print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
+        print("\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----")
     return True
 
 def addFollow(profile, neighbor):
@@ -174,13 +174,13 @@ def addFollow(profile, neighbor):
             userGraph.cypher.execute(query, {'profile': profile_info,
                                         'neighbor': neighbor_info})
             if profile_info['username'] and neighbor_info['username']:
-                print profile_info['username'] + " follows " + neighbor_info['username']
+                print (profile_info['username'] + " follows " + neighbor_info['username'])
         except SocketError:
-            print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
+            print ("\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----")
     if profile is None:
-        print "Profile not found."
+        print("Profile not found.")
     if neighbor is None:
-        print "Neighbor not found."
+        print("Neighbor not found.")
     return True
 
 def addUserFav(profile, favorite):#, track):
@@ -207,28 +207,28 @@ def addUserFav(profile, favorite):#, track):
     #                                   'track': track,
                                         'favorite': fav_info})
             prof = userGraph.find_one("soundcloud", "id", profile_info['id'])
-            print "Profile properties - "
-            print prof.properties
+            print("Profile properties - ")
+            print(prof.properties)
             fav = userGraph.find_one("soundcloud", "id", fav_info['user_id'])
-            print "Favorite properties - "
-            print fav.properties
+            print("Favorite properties - ")
+            print(fav.properties)
             if not Relationship(prof, "favorites", fav).exists:
                 userGraph.create_unique(Relationship(prof, "favorites", fav, track_ids = [track_id]))
             else:
                 Relationship(prof, "favorites", fav)['track_ids'] += [track_id]
             if profile_info['username'] and fav_info['user_id']:
                 try:
-                    print profile_info['username'] + " favorites " + id2username(fav_info['user_id'])
+                    print(profile_info['username'] + " favorites " + id2username(fav_info['user_id']))
                 except UnicodeDecodeError:
-                    print profile_info['username'] + " favorites " + str(fav_info['user_id'])
+                    print(profile_info['username'] + " favorites " + str(fav_info['user_id']))
                 except TypeError:
-                    print "User's favorite not printed due to Type Error."
+                    print("User's favorite not printed due to Type Error.")
         except SocketError:
-            print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
+            print("\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----")
     if profile is None:
-        print "Profile not found"
+        print("Profile not found")
     if favorite is None:
-        print "Favorite not found"
+        print("Favorite not found")
     return True
     #Use SET to update properties
 
@@ -260,17 +260,17 @@ def addUserComm(profile, comment):#, comment):
            #     userGraph.create_unique(Relationship(profile, "comments", neighbor, track_ids = [track]))
             if profile_info['username'] and comm_info['user_id']:
                 try:
-                    print profile_info['username'] + " comments " + id2username(comm_info['user_id'])
+                    print(profile_info['username'] + " comments " + id2username(comm_info['user_id']))
                 except UnicodeDecodeError:
-                    print profile_info['username'] + " favorites " + str(comm_info['user_id'])
+                    print(profile_info['username'] + " favorites " + str(comm_info['user_id']))
                 except TypeError:
-                    print "User's comment not shown due to Type error."
+                    print("User's comment not shown due to Type error.")
         except SocketError:
-            print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
+            print("\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----")
     if profile is None:
-        print "Profile not found"
+        print("Profile not found")
     if comment is None:
-        print "Comment not found"
+        print("Comment not found")
     return True
 
 def addTrackFav(favoriter, profile):#, track):
@@ -300,13 +300,13 @@ def addTrackFav(favoriter, profile):#, track):
         #    else:
         #        userGraph.create_unique(Relationship(profile, "favorites", neighbor, track_ids = [track]))
             if profile_info['username'] and fav_info['username']:
-                print fav_info['username'] + " favorites " + profile_info['username']
+                print(fav_info['username'] + " favorites " + profile_info['username'])
         except SocketError:
-            print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
+            print("\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----")
     if favoriter is None:
-        print "Favoriter not found"
+        print("Favoriter not found")
     if profile is None:
-        print "Profile not found"
+        print("Profile not found")
     return True
     #Use SET to update properties
 
@@ -338,17 +338,17 @@ def addTrackComm(commenter, profile):#, comment):
            #    userGraph.create_unique(Relationship(profile, "comments", neighbor, track_ids = [track]))
             if profile_info['username'] and comm_info['user_id']:
                 try:
-                    print id2username(comm_info['user_id']) + " comments  " + profile_info['username']
+                    print(id2username(comm_info['user_id']) + " comments  " + profile_info['username'])
                 except UnicodeDecodeError:
-                    print str(comm_info['user_id']) + " comments  " + profile_info['username']
+                    print(str(comm_info['user_id']) + " comments  " + profile_info['username'])
                 except TypeError:
-                    print "Track comment not shown due to Type error."
+                    print("Track comment not shown due to Type error.")
         except SocketError:
-            print "\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----"
+            print("\t\t\t", "----Cannot connect to cypher db. Assume the query was executed successfully.----")
     if commenter is None:
-        print "Commenter not found"
+        print("Commenter not found")
     if profile is None:
-        print "Profile not found"
+        print("Profile not found")
     return True
 
 def addFollowings(profile, followings): #, profileGraph):
@@ -386,4 +386,4 @@ def addTracks(profile, tracks): #, profileGraph):
                 addTrackComm(commenter, profile) #, commenter.id)
 #               addAction('comments', user, artist, addWeight('comments', comment, artist, profileGraph, 'com_weight'))
         except HTTPError:
-            print "Track not processed due to HTTP error."
+            print("Track not processed due to HTTP error.")
