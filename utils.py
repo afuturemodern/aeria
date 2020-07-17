@@ -24,22 +24,22 @@ def handle_http_errors(fn):
     def wrapped(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
-        except ConnectionError, e:
-            print "\t"*2, "{0:s}: Connection Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message)
+        except ConnectionError as e:
+            print("\t"*2, "{0:s}: Connection Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message))
             return []
-        except HTTPError, e:
+        except HTTPError as e:
             return []
-        except TypeError, e:
-            print "\t"*2, "{0:s}: Type Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message)
+        except TypeError as e:
+            print("\t"*2, "{0:s}: Type Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message))
             return []
-        except RuntimeError, e:
-            print "\t", "{0:s}: Runtime Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message)
+        except RuntimeError as e:
+            print("\t", "{0:s}: Runtime Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message))
             return []
-        except Exception, e:
+        except Exception as e:
             if hasattr(e, 'response'):
-                print "\t"*2, "{0:s}: Status Code ({1:d}) for uncaught error: {2:s}".format(fn.__name__, e.response.status_code, e.message)
+                print("\t"*2, "{0:s}: Status Code ({1:d}) for uncaught error: {2:s}".format(fn.__name__, e.response.status_code, e.message))
             else:
-                print "\t"*2, "{0:s}: Uncaught error: {1:s}".format(fn.__name__, e.message)
+                print("\t"*2, "{0:s}: Uncaught error: {1:s}".format(fn.__name__, e.message))
             return []
     return wrapped
 
@@ -47,7 +47,7 @@ def wrap_error(fn):
     def wrapped(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
-        except Exception, e:
+        except Exception as e:
             et, ei, tb = sys.exc_info()
             raise et, ei, tb
     return wrapped
