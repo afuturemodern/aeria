@@ -49,5 +49,5 @@ def wrap_error(fn):
             return fn(*args, **kwargs)
         except Exception as e:
             et, ei, tb = sys.exc_info()
-            raise et, ei, tb
+            raise [et, ei, tb]
     return wrapped
