@@ -20,7 +20,7 @@ extras_require["develop"] = sorted(
         + ["check-manifest", "bumpversion~=0.5", "pre-commit", "twine"]
     )
 )
-extras_require["complete"] = sorted(set(sum(extras_require.values(), [])))
+extras_require["complete"] = sorted(set(sum(list(extras_require.values()), [])))
 
 setup(
     extras_require=extras_require,

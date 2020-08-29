@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 import json
@@ -6,7 +5,7 @@ import json
 import networkx as nx
 
 
-__all__ = ['get_geoff']
+__all__ = ["get_geoff"]
 
 
 def get_node(node_name, properties, encoder):
@@ -19,10 +18,9 @@ def get_node(node_name, properties, encoder):
     :rtype: A Geoff string
     """
     if properties:
-        return '({0} {1})'.format(node_name,
-                                  encoder.encode(properties))
+        return "({0} {1})".format(node_name, encoder.encode(properties))
     else:
-        return '({0})'.format(node_name)
+        return "({0})".format(node_name)
 
 
 def get_edge(from_node, to_node, properties, edge_relationship_name, encoder):
@@ -39,18 +37,17 @@ def get_edge(from_node, to_node, properties, edge_relationship_name, encoder):
     """
     edge_string = None
     if properties:
-        args = [from_node, edge_relationship_name,
-                encoder.encode(properties), to_node]
-        edge_string = '({0})-[:{1} {2}]->({3})'.format(*args)
+        args = [from_node, edge_relationship_name, encoder.encode(properties), to_node]
+        edge_string = "({0})-[:{1} {2}]->({3})".format(*args)
     else:
         args = [from_node, edge_relationship_name, to_node]
-        edge_string = '({0})-[:{1}]->({2})'.format(*args)
+        edge_string = "({0})-[:{1}]->({2})".format(*args)
 
     return edge_string
 
 
 def get_geoff(graph, encoder=None):
-    """ Get the `graph` as Geoff string. The edges between the nodes
+    """Get the `graph` as Geoff string. The edges between the nodes
     have relationship name `edge_rel_name`. The code
     below shows a simple example::
 
@@ -86,10 +83,11 @@ def get_geoff(graph, encoder=None):
     for node_name, properties in graph.nodes(data=True):
         lapp(get_node(node_name, properties, encoder))
 
-    for from_node, to_node, edge_rel_name, properties in graph.edges(data=True,keys=True):
+    for from_node, to_node, edge_rel_name, properties in graph.edges(
+        data=True, keys=True
+    ):
         lapp(get_edge(from_node, to_node, properties, edge_rel_name, encoder))
         if not is_digraph:
-            lapp(get_edge(to_node, from_node, properties, edge_rel_name,
-                          encoder))
+            lapp(get_edge(to_node, from_node, properties, edge_rel_name, encoder))
 
-    return '\n'.join(lines)
+    return "\n".join(lines)
