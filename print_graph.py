@@ -1,6 +1,3 @@
-import sys
-import networkx as nx
-import soundcloud
 import sc_api_calls as scac
 
 

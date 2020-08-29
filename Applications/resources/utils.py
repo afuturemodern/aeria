@@ -38,7 +38,7 @@ def handle_http_errors(fn):
                 "{0:s}".format(e.message),
             )
             return []
-        except HTTPError as e:
+        except HTTPError:
             return []
         except TypeError as e:
             print(
@@ -80,7 +80,7 @@ def wrap_error(fn):
     def wrapped(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
-        except Exception as e:
+        except Exception:
             et, ei, tb = sys.exc_info()
             raise et(ei).with_traceback(tb)
 

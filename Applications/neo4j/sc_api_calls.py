@@ -1,9 +1,7 @@
-import sys
 import soundcloud
-import networkx as nx
-from py2neo import authenticate, Node, Relationship, Graph
+from py2neo import authenticate, Relationship, Graph
 from py2neo.packages.httpstream.http import SocketError
-from requests.exceptions import ConnectionError, HTTPError
+from requests.exceptions import HTTPError
 from utils import get_results, handle_http_errors
 from functools import partial
 

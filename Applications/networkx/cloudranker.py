@@ -1,9 +1,7 @@
-import sys
 import networkx as nx
-import sqlite3
 
 import soundcloud
-from .sc_pagerank import computePR, initializePR
+from .sc_pagerank import computePR
 import sc_api_calls as scac
 
 artistGraph = nx.MultiDiGraph()

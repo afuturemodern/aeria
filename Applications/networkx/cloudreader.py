@@ -1,6 +1,4 @@
-import sys
 import networkx as nx
-import soundcloud
 
 
 def read_graph(G, gfile):

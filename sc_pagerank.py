@@ -1,4 +1,3 @@
-import sys
 import soundcloud
 
 client = soundcloud.Client(client_id="454aeaee30d3533d6d8f448556b50f23")

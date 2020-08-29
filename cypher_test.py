@@ -1,4 +1,4 @@
-from py2neo import Graph, Node, Relationship, authenticate
+from py2neo import Graph, Relationship, authenticate
 
 authenticate("localhost:7474", "neo4j", "cloudchaser")
 graph = Graph("http://localhost:7474/db/data/")

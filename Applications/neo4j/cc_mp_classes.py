@@ -9,7 +9,6 @@ class Consumer(mp.Process):
         self.result_queue = result_queue
 
     def run(self):
-        proc_name = self.name
         while True:
             next_task = self.task_queue.get()
             # Poison pill means we should exit

@@ -1,13 +1,8 @@
-import sys
-import networkx as nx
-import sqlite3
-
 import soundcloud
-from sc_pagerank import computePR, initializePR
 import sc_api_calls as scac
 
 import multiprocessing as mp
-from cc_mp_classes import Consumer, Task, bookTasks
+from cc_mp_classes import Consumer, bookTasks
 
 # A global artist graph used to iterate through the various algorithms.
 # Each node is artist id, with edges weighted by activity between then.

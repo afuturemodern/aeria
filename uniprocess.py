@@ -1,7 +1,6 @@
-import sys
 import networkx as nx
 import soundcloud
-from sc_pagerank import computePR, initializePR
+from sc_pagerank import computePR
 import sc_api_calls as scac
 
 from cloudprinter import print_graph
