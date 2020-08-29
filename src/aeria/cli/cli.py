@@ -2,7 +2,6 @@ import logging
 import click
 
 from ..version import __version__
-from ..core import SerialNumberStruct
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
