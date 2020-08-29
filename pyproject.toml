@@ -22,3 +22,10 @@ ignore = [
     'pytest.ini',
     'CODE_OF_CONDUCT.md',
 ]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--ignore=setup.py --cov=aeria --cov-report=term-missing --cov-config=.coveragerc --cov-report xml --doctest-modules --doctest-glob='*.rst'"
+testpaths = [
+    "tests",
+]
