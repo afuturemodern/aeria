@@ -3,4 +3,11 @@ graft src
 
 include LICENSE
 
+exclude *.db
+exclude *.id
+exclude *.ipynb
+exclude *.py
+exclude Results
+exclude requirements
+
 global-exclude __pycache__ *.py[cod] .*
