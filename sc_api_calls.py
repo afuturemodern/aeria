@@ -1,9 +1,7 @@
-import sys
 import soundcloud
-import networkx as nx
-from py2neo import authenticate, Node, Relationship, Graph
+from py2neo import authenticate, Relationship, Graph
 from py2neo.packages.httpstream.http import SocketError
-from requests.exceptions import ConnectionError, HTTPError
+from requests.exceptions import HTTPError
 from utils import get_results, handle_http_errors
 from functools import partial
 
@@ -187,7 +185,7 @@ def addUserFav(profile, favorite):#, track):
     query = ('MERGE (profile:soundcloud {id: {profile}.id}) \
             ON CREATE SET profile={profile} '
             'MERGE (favorite:soundcloud {id: {favorite}.user_id}) \
-            ON CREATE SET favorite={favorite} '   
+            ON CREATE SET favorite={favorite} '
        #     'MERGE (profile)-[r:favorites]->(favorite)'
             )
             # Create new favorite relationship if it dne
@@ -236,7 +234,7 @@ def addUserComm(profile, comment):#, comment):
     query = ('MERGE (profile:soundcloud {id: {profile}.id}) \
             ON CREATE SET profile={profile} '
             'MERGE (comment:soundcloud {id: {comment}.user_id}) \
-            ON CREATE SET comment={comment} '   
+            ON CREATE SET comment={comment} '
             'MERGE (profile)-[r:comments]->(comment)'
             )
             # Create new comment relationship if it dne
@@ -277,7 +275,7 @@ def addTrackFav(favoriter, profile):#, track):
     query = ('MERGE (profile:soundcloud {id: {profile}.id}) \
             ON CREATE SET profile={profile} '
             'MERGE (favoriter:soundcloud {id: {favoriter}.id}) \
-            ON CREATE SET favoriter={favoriter} '    
+            ON CREATE SET favoriter={favoriter} '
             'MERGE (favoriter)-[r:favorites]->(profile)'
             )
             # Create new favorite relationship if it dne
@@ -314,7 +312,7 @@ def addTrackComm(commenter, profile):#, comment):
     query = ('MERGE (profile:soundcloud {id: {profile}.id}) \
             ON CREATE SET profile={profile} '
             'MERGE (commenter:soundcloud {id: {commenter}.user_id}) \
-            ON CREATE SET commenter={commenter} '   
+            ON CREATE SET commenter={commenter} '
             'MERGE (commenter)-[r:comments]->(profile)'
             )
             # Create new comment relationship if it dne

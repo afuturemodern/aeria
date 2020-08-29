@@ -27,7 +27,7 @@ def handle_http_errors(fn):
         except ConnectionError as e:
             print("\t"*2, "{0:s}: Connection Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message))
             return []
-        except HTTPError as e:
+        except HTTPError:
             return []
         except TypeError as e:
             print("\t"*2, "{0:s}: Type Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message))
@@ -47,7 +47,7 @@ def wrap_error(fn):
     def wrapped(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
-        except Exception as e:
+        except Exception:
             et, ei, tb = sys.exc_info()
             raise [et, ei, tb]
     return wrapped
