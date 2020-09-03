@@ -1,0 +1,31 @@
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["wheel", "setuptools>=30.3.0", "attrs>=17.1", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | .eggs
+  | build
+)/
+'''
+
+[tool.check-manifest]
+ignore = [
+    'tests/**',
+    '.*',
+    'pyproject.toml',
+    'pytest.ini',
+    'CODE_OF_CONDUCT.md',
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--ignore=setup.py --cov=aeria --cov-report=term-missing --cov-config=.coveragerc --cov-report xml --doctest-modules --doctest-glob='*.rst'"
+testpaths = [
+    "tests",
+]

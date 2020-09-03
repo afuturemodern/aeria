@@ -5,49 +5,93 @@ from requests.exceptions import ConnectionError, HTTPError
 def get_results(client, url, page_size=100):
     def get_next_results(results=None):
         if results is None:
-            return client.get(url, order='created_at', limit=page_size, linked_partitioning=1)
-        next_href = getattr(results, 'next_href', None)
-        if next_href is None: return None
-        else: return client.get(next_href)
+            return client.get(
+                url, order="created_at", limit=page_size, linked_partitioning=1
+            )
+        next_href = getattr(results, "next_href", None)
+        if next_href is None:
+            return None
+        else:
+            return client.get(next_href)
 
     def yield_results():
         # start results
         results = get_next_results(None)
         while results is not None:
-            for result in getattr(results, 'collection', []):
+            for result in getattr(results, "collection", []):
                 yield result
             results = get_next_results(results)
 
     return yield_results()
+
 
 def handle_http_errors(fn):
     def wrapped(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
         except ConnectionError as e:
-            print("\t"*2, "{0:s}: Connection Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message))
+            print(
+                (
+                    "\t" * 2,
+                    "{0:s}: Connection Error".format(fn.__name__),
+                    "\n",
+                    "\t" * 2,
+                    "{0:s}".format(e.message),
+                )
+            )
             return []
-        except HTTPError as e:
+        except HTTPError:
             return []
         except TypeError as e:
-            print("\t"*2, "{0:s}: Type Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message))
+            print(
+                (
+                    "\t" * 2,
+                    "{0:s}: Type Error".format(fn.__name__),
+                    "\n",
+                    "\t" * 2,
+                    "{0:s}".format(e.message),
+                )
+            )
             return []
         except RuntimeError as e:
-            print("\t", "{0:s}: Runtime Error".format(fn.__name__), "\n", "\t"*2, "{0:s}".format(e.message))
+            print(
+                (
+                    "\t",
+                    "{0:s}: Runtime Error".format(fn.__name__),
+                    "\n",
+                    "\t" * 2,
+                    "{0:s}".format(e.message),
+                )
+            )
             return []
         except Exception as e:
-            if hasattr(e, 'response'):
-                print("\t"*2, "{0:s}: Status Code ({1:d}) for uncaught error: {2:s}".format(fn.__name__, e.response.status_code, e.message))
+            if hasattr(e, "response"):
+                print(
+                    (
+                        "\t" * 2,
+                        "{0:s}: Status Code ({1:d}) for uncaught error: {2:s}".format(
+                            fn.__name__, e.response.status_code, e.message
+                        ),
+                    )
+                )
             else:
-                print("\t"*2, "{0:s}: Uncaught error: {1:s}".format(fn.__name__, e.message))
+                print(
+                    (
+                        "\t" * 2,
+                        "{0:s}: Uncaught error: {1:s}".format(fn.__name__, e.message),
+                    )
+                )
             return []
+
     return wrapped
+
 
 def wrap_error(fn):
     def wrapped(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
-        except Exception as e:
+        except Exception:
             et, ei, tb = sys.exc_info()
             raise [et, ei, tb]
+
     return wrapped

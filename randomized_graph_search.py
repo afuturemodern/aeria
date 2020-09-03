@@ -1,14 +1,9 @@
-import sys
-import networkx as nx 
-import sqlite3
-import random 
-
-import soundcloud
-from sc_pagerank import computePR, initializePR
+import networkx as nx
+import random
 import sc_api_calls as scac
 
-import multiprocessing as mp 
-from cc_mp_classes import Consumer, Task, bookTasks
+import multiprocessing as mp
+from cc_mp_classes import Consumer, bookTasks
 
 # A global artist graph used to iterate through the various algorithms.
 # Each node is artist id, with edges weighted by activity between then.
@@ -18,22 +13,28 @@ tasks = mp.Queue()
 results = mp.Queue()
 
 try:
-    print "Reading in artist graph..."
-    artistGraph = nx.read_pajek('artistGraph.net')
-    print "Read successfully!"
-    print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
-    print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."
+    print("Reading in artist graph...")
+    artistGraph = nx.read_pajek("artistGraph.net")
+    print("Read successfully!")
+    print("The artist graph currently contains " + str(len(artistGraph)) + " artists.")
+    print(
+        "The artist graph currently contains "
+        + str(nx.number_strongly_connected_components(artistGraph))
+        + " strongly connected components."
+    )
 except IOError:
-    print "Could not find artistGraph"
+    print("Could not find artistGraph")
+
 
 def my_shuffle(A):
     random.shuffle(A)
-    return A    
+    return A
 
-rartists = my_shuffle(artistGraph.nodes())    
+
+rartists = my_shuffle(artistGraph.nodes())
 
 for artist_id in rartists:
-    
+
     # initialize the task queue
     artists_to_enqueue = [artist_id]
 
@@ -45,11 +46,11 @@ for artist_id in rartists:
 
     # list of artists we could not query
     unavailable_artists = []
-    
+
     for t in range(depth):
 
-        print "Iteration " + str(t)
-        consumers = [Consumer(tasks, results) for i in xrange(num_consumers)]
+        print("Iteration " + str(t))
+        consumers = [Consumer(tasks, results) for i in range(num_consumers)]
         for w in consumers:
             w.start()
 
@@ -60,30 +61,32 @@ for artist_id in rartists:
         for artist in artists_to_enqueue:
             username = scac.id2username(artist)
             try:
-                print "\t", "Enqueueing: %s (%s)" % (username, artist)
+                print("\t", "Enqueueing: %s (%s)" % (username, artist))
                 artistGraph.add_node(artist)
                 bookTasks(tasks, artist)
                 num_jobs += 1
             except UnicodeDecodeError:
-                print "\t", "Artist ID %s is not query-able" % artist
+                print("\t", "Artist ID %s is not query-able" % artist)
                 unavailable_artists.append(artist)
 
-        print "\t", "--%d jobs enqueued" % num_jobs
+        print("\t", "--%d jobs enqueued" % num_jobs)
 
         artists_to_enqueue = []
 
         # poison pill to kill off all workers when we finish
-        for i in xrange(num_consumers):
+        for i in range(num_consumers):
             tasks.put(None)
 
         while num_jobs:
             artist, action, newArtists = results.get()
             if newArtists:
-                actions = {"followings": scac.addFollowings,
-                        "followers": scac.addFollowers,
-                        "favorites": scac.addFavorites,
-                        "comments": scac.addComments,
-                        "tracks": scac.addTracks}
+                actions = {
+                    "followings": scac.addFollowings,
+                    "followers": scac.addFollowers,
+                    "favorites": scac.addFavorites,
+                    "comments": scac.addComments,
+                    "tracks": scac.addTracks,
+                }
                 # this is most likely a useless check as artist is already in the graph from above
                 if artistGraph.__contains__(artist):
                     # eg: addFollowings(artist, newArtists)
@@ -91,10 +94,14 @@ for artist_id in rartists:
                     artists_to_enqueue.extend(newArtists)
                 num_jobs -= 1
 
-        print "\t", "--Finished all jobs!"
+        print("\t", "--Finished all jobs!")
 
         # if we reach here, we've finished processing all artist tasks
 
-print "The artist graph currently contains " + str(len(artistGraph)) + " artists."
+print("The artist graph currently contains " + str(len(artistGraph)) + " artists.")
 
-print "The artist graph currently contains " + str(nx.number_strongly_connected_components(artistGraph)) + " strongly connected components."    
+print(
+    "The artist graph currently contains "
+    + str(nx.number_strongly_connected_components(artistGraph))
+    + " strongly connected components."
+)
