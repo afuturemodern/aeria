@@ -17,7 +17,7 @@ extras_require["develop"] = sorted(
     set(
         extras_require["test"]
         + extras_require["lint"]
-        + ["check-manifest", "bumpversion~=0.5", "pre-commit", "twine"]
+        + ["check-manifest", "bumpversion~=0.5", "pre-commit", "twine", "jupyter"]
     )
 )
 extras_require["complete"] = sorted(set(sum(list(extras_require.values()), [])))

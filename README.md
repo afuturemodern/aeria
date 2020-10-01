@@ -32,6 +32,39 @@ However, if you want to, you can of course also install it directly from the Git
 $ python -m pip install .
 ```
 
+### Setting up Neo4j DB
+
+Assuming that one has finished running the `soundcloud_api_wrapper.ipynb` to get a `profile.graphml` file...
+
+Docker is preferred here. Quickly one-liner:
+
+```
+docker run --rm --name neo4j \
+                -p7474:7474 -p7687:7687 \
+                --env NEO4J_AUTH=neo4j/admin \
+                --env NEO4JLABS_PLUGINS='["apoc"]' \
+                --env NEO4J_apoc_import_file_enabled=true \
+                -v $(PWD)/profile.graphml:/var/lib/neo4j/import/profile.graphml \
+                neo4j:4.1
+```
+
+This:
+
+  * runs `neo4j @ 4.1-latest`
+  * exposes the ports `7474` and `7687` locally on your computer (host)
+  * sets username/password to `neo4j`/`admin`
+  * adds the `APOC` plugin
+  * tells `apoc` that we want to enable file import from `/var/lib/neo4j/import` folder
+  * mounts the saved `profile.graphml` into the `/var/lib/neo4j/import` folder of the docker image for importing
+
+Note, the `7474` port is useful for opening up the `neo4j` browser at http://localhost:7474/browser/. We can (in another shell) tell the running docker container to import our `profile.graphml`:
+
+```
+docker exec neo4j cypher-shell -u neo4j -p admin "CALL apoc.import.graphml('profile.graphml', {})"
+```
+
+which will import it into the database for us. Then one can just browser or use neo4j for exploring.
+
 ## Contributing
 
 As this library is experimental contributions of all forms are welcome.
