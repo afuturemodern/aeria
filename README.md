@@ -39,7 +39,7 @@ Assuming that one has finished running the `soundcloud_api_wrapper.ipynb` to get
 Docker is preferred here. Quickly one-liner:
 
 ```
-docker run --rm --name neo4j \
+sudo docker run --rm --name neo4j \
                 -p7474:7474 -p7687:7687 \
                 --env NEO4J_AUTH=neo4j/admin \
                 --env NEO4JLABS_PLUGINS='["apoc"]' \
