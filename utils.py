@@ -36,7 +36,7 @@ def handle_http_errors(fn):
                     "{0:s}: Connection Error".format(fn.__name__),
                     "\n",
                     "\t" * 2,
-                    "{0:s}".format(e.message),
+                    "{0:s}".format(str(e)),
                 )
             )
             return []
