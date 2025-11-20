@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest]
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.10, 3.11, 3.12]
 
     steps:
     - uses: actions/checkout@v2
@@ -28,14 +28,14 @@ jobs:
         python -m pip install -q --no-cache-dir --use-feature=2020-resolver -e .[complete]
         python -m pip list
     - name: Check MANIFEST
-      if: matrix.python-version == 3.8 && matrix.os == 'ubuntu-latest'
+      if: matrix.python-version == 3.12 && matrix.os == 'ubuntu-latest'
       run: |
         check-manifest
     - name: Test with pytest
       run: |
         python -m pytest -r sx
     - name: Report coverage with Codecov
-      if: github.event_name == 'push' && matrix.python-version == 3.8 && matrix.os == 'ubuntu-latest'
+      if: github.event_name == 'push' && matrix.python-version == 3.12 && matrix.os == 'ubuntu-latest'
       uses: codecov/codecov-action@v1
       with:
         file: ./coverage.xml
